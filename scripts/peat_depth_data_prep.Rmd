@@ -5,7 +5,6 @@ output: html_notebook
 
 #Peat Depths: model selection script
 
-
 ## Packages 
 ```{r}
 library(raster)
@@ -15,14 +14,15 @@ library(rgdal)
 
 ## Import data ----
 ```{r}
-list.files(path = "data/peat_depth_data/")
+list.files(path = "../data")
+list.files(path = "../data/peat_depth_data/")
 ```
 
 ### Import the main file geodatabase 
 
 currently peat depth data is not in there
 ```{r}
-fgdb <- "data/PeatDepth.gdb"
+fgdb <- "../data/PeatDepth.gdb"
   # List all feature classes in a file geodatabase
   subset(ogrDrivers(), grepl("GDB", name))
   fc_list <- ogrListLayers(fgdb)
@@ -32,105 +32,89 @@ fgdb <- "data/PeatDepth.gdb"
 
 ### Import peat depth file
 ```{r}
-pdshp <- "data/peat_depth_data/Combined_Peat_Depth_Survey_Data_NOV2012_ALLDATA.shp"
+pdshp <- "../data/peat_depth_data/Combined_Peat_Depth_Survey_Data_NOV2012_ALLDATA.shp"
 ogrInfo(pdshp)
+
 #save the shapefile into an object
 peat.depth <- readOGR(dsn = pdshp, verbose = TRUE)
+
 # Determine the FC extent, projection, and attribute information
 summary(peat.depth)
-  #plot(peat.depth, pch = 21, cex = 0.25)
-
+  # plot(peat.depth, pch = 21, cex = 0.25)
 ```
 
-#read elevation data
-elev <- raster("data/Ground Elevation © CEH1.tif")
-  #summary(elev)
-#  plot(elev)
+### Import environmental and topographic data
+```{r}
+# #elevation 
+# elev <- raster("../data/Ground Elevation © CEH1.tif")
+# 
+# #surface type 
+# surf <- raster("../data/Surface Type © CEH1.tif")
+# 
+# #inflow pattern
+# inflow <- raster("../data/Inflow Pattern © CEH1.tif")
+# 
+# #outflow pattern
+# outflow <- raster("../data/Outflow Pattern © CEH1.tif")
 
-#read average annual precip data
-aap <- raster("data/Average_Annual_Rainfall.tif") 
- # summary(aap)
-#  plot(aap)
 
-#resample to DTM raster resolution
-aap <- resample(elev, aap)
-  #summary(aap)
-  #plot(aap)
+# #resample rasters
+#need to work out which to resample
 
+
+# #save to file
+#save(list = c("elev", "surf", "inflow", "outflow"), file = "../data/topo_env_data.rda")
+
+load(file = "../data/topo_env_data.rda")
+```
 
 ## Import UKCP09 climate data
 
-define the projection 
-```{r}
-crs_bng <- "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +datum=OSGB36 +units=m +no_defs" 
-```
-
+These data are Met Office figures produced for the UK Climate Projections 2009 and available from www.ceda.ac.uk (collection ukcp09, 5km gridded long term averages).  The process for reading and converting them to raster format, as well as the calculation of derived values (such as seasonal figures) are contained in the script `ukcp09DataImport.R`.  
 
 ```{r}
-maxTempJan <- read.asciigrid(
-    fname = "data/ukcp09/ukcp09-5km_maximum-temperature_196101-199001.txt",
-    proj4string = paste(crs_bng)
-    )
+# Annual data rasters
+load(file = "../data/ukcp09GriddedDataAnn.rda")
 
+# Seasonal data rasters
+# load(file = "../data/ukcp09GriddedDataSease.rda")
+
+# monthly data rasters - lots of objects
+# load(file = "../data/ukcp09GriddedDataMonthly.rda")
 ```
 
-
-read in ascii grid files and convert to raster
+resample rasters
 ```{r}
-maxTempJan <- raster(
-  read.asciigrid(
-    fname = "data/ukcp09/ukcp09-5km_maximum-temperature_196101-199001.txt",
-    proj4string = paste(crs_bng)
-    )
-)
- #plot(maxTempJan)
+# need to work out which to resample
 ```
-
-resample to match elevation (actuallly, is that right or should I resample to aap like the rasters above????? why aap???, should I resample to the highest or the lowest available resolution or something in between?)
-```{r}
-maxTempJanResampled <- resample(maxTempJan, elev)
- #plot(maxTempJanResampled)
-```
-
 
 
 ####calculate derrived data ----
-
-##for the time beign we don't need to do this because its already in teh
-##peat.depth dataset.  however, for running full model we'll have to do it.
-# 
-# slope <- terrain(x = elev, opt = "slope", unit = "radians",
-#                  neighbors = 8,
-#                  filename = "data/slope_20m.tif", 
-#                  overwrite = T)
+ 
+```{r}
+slope <- terrain(x = elev, opt = "slope", unit = "radians", neighbors = 8)
 #   # summary(slope)
 #   #  plot(slope)
-# 
-# aspect <- terrain(x = elev, opt = "aspect", unit = "degrees",
-#                   neighbors = 8,
-#                   filename = "data/aspect_20m.tif", 
-#                   overwrite = T)
+
+aspect <- terrain(x = elev, opt = "aspect", unit = "degrees", neighbors = 8)
 #   #  summary(aspect)
 #   #  plot(aspect)
-# 
+```
 
+## Create input dataset
 
-
-# #create input data from derrived data----
+```{r}
 # input.data <- as.data.frame(peat.depth$PEAT_DEPTH)
 # names(input.data) <- "PEAT_DEPTH"
 # input.data$elev <- extract(elev, coordinates(peat.depth)[,1:2])
 # input.data$aspect <- extract(aspect, coordinates(peat.depth)[,1:2])
 # input.data$slope <- extract(slope, coordinates(peat.depth)[,1:2])
-# input.data$aap <- extract(aap, coordinates(peat.depth)[,1:2])
+#need to add the other variables
+```
 
+## export to file
 
-
-#create input data from provided data
-input.data <- as.data.frame(peat.depth[,c(1, 4:13)])
-names(input.data)
-
-#export to file
-saveRDS(input.data, file="data/input.data.rds")
-write.csv(input.data, file = "input_data.csv", row.names = F)
- 
+```{r}
+#saveRDS(input.data, file="data/input.data.rds")
+#write.csv(input.data, file = "input_data.csv", row.names = F)
+```
