@@ -9,6 +9,7 @@ output: html_notebook
 ```{r}
 library(raster)
 library(rgdal)
+library(eply) # for unquoting ls objects
 ```
 
 
@@ -56,12 +57,7 @@ summary(peat.depth)
 # 
 # #outflow pattern
 # outflow <- raster("../data/Outflow Pattern © CEH1.tif")
-
-
-# #resample rasters
-#need to work out which to resample
-
-
+#
 # #save to file
 #save(list = c("elev", "surf", "inflow", "outflow"), file = "../data/topo_env_data.rda")
 
@@ -73,6 +69,8 @@ load(file = "../data/topo_env_data.rda")
 These data are Met Office figures produced for the UK Climate Projections 2009 and available from www.ceda.ac.uk (collection ukcp09, 5km gridded long term averages).  The process for reading and converting them to raster format, as well as the calculation of derived values (such as seasonal figures) are contained in the script `ukcp09DataImport.R`.  
 
 ```{r}
+# load data rasters
+
 # Annual data rasters
 load(file = "../data/ukcp09GriddedDataAnn.rda")
 
@@ -85,7 +83,17 @@ load(file = "../data/ukcp09GriddedDataAnn.rda")
 
 resample rasters
 ```{r}
-# need to work out which to resample
+# resample: x = raster to be resampled, y = raster to be resampled to
+ls(pattern = "1960_90")
+gdd_1960_90_ann <- resample(gdd_1960_90_ann, elev)
+gsl_1960_90_ann <- resample(gsl_1960_90_ann, elev)
+rain_1960_90_ann <- resample(rain_1960_90_ann, elev)
+rain_daily_mean_1960_90_annual <- resample(rain_daily_mean_1960_90_annual, elev)
+raindays_10mm_1960_90_annual <- resample(raindays_10mm_1960_90_annual, elev)
+raindays_1mm_1960_90_annual <- resample(raindays_1mm_1960_90_annual, elev)
+temp_max_1960_90_annual <- resample(temp_max_1960_90_annual, elev)
+temp_mean_1960_90_annual <- resample(temp_mean_1960_90_annual, elev)
+temp_min_1960_90_annual <- resample(temp_min_1960_90_annual, elev)
 ```
 
 
