@@ -12,6 +12,9 @@ library(rgdal)
 library(randomForest)
 library(caTools)
 library(ggplot2)
+library(caret)
+library(parallel)
+library(doParallel)
 ```
 
 ## Load data
@@ -28,6 +31,19 @@ split <- sample.split(input.data$PEAT_DEPTH, SplitRatio = 2/3)
 training_set <- subset(input.data, split == TRUE)
 test_set <- subset(input.data, split == FALSE)
 ```
+
+## Start Parallel Processing
+
+```{r}
+detectCores()
+getDoParWorkers()
+cl <- makeCluster(detectCores()-1)
+registerDoParallel(cl)
+getDoParName()
+getDoParWorkers()
+```
+
+
 
 
 ## Minimal models
@@ -110,6 +126,6 @@ M.rf.2 <- train(PEAT_DEPTH ~ .,
                 data=training, 
                 method = "rf")
 
-saveRDS(M.rf.1, file = "../data/models/M.rf.1")
+saveRDS(M.rf.2, file = "../data/models/M.rf.2")
 ```
 
