@@ -52,7 +52,7 @@ The model will be trained on `NUMBER OF MEASUREMENTS` measured peat depths *DETA
 *explain what models are used, what models were tried and rationale for choice.* 
 
 ## Project information
-This project was carried out in `R` (R Core Team, 2016) and is a mixture of `R script` (`.R`) and `Rmarkdown  Notebook` (`.rmd`).  The code in this repository is intended to be run in the order below.  However any data output from one script that is to be passed forward to a later script has been saved with `save()` as a `.rda` file.  The later script then loads the `.rda` file.  This is particularly useful for the `.Rmd` files which can all be independently 'knitted'.  Currently, no scripts are 'sourced' into another script.  
+This project was carried out in `R` (R Core Team, 2016) and is a mixture of `R script` (`.R`) and `Rmarkdown  Notebook` (`.rmd`).  The code in this repository is intended to be run in the order below.  However any data output from one script that is to be passed forward to a later script has been saved with `save()` as a `.rds` file.  The later script then loads the `.rds` file.  This is particularly useful for the `.Rmd` files which can all be independently 'knitted'.  Currently, no scripts are 'sourced' into another script.  
 
 |Script filename|Type|Purpose|
 |:--------------|:---|:---------------------------------------------|
