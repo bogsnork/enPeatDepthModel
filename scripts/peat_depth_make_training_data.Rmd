@@ -30,7 +30,7 @@ rm(pdshp)
 ### Import predictor data
 ```{r}
 # Import environmental and topographic data
-load(file = "../data/topo_env_data.rda")
+load(file = "../data/topo_env_data.rds")
 
 # Import UKCP09 climate data
 load(file = "../data/ukcp09GriddedDataAnnPrepd.rds")
