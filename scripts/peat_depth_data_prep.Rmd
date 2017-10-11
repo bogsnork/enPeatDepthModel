@@ -3,7 +3,7 @@ title: "England Peat Depth Model: Data Preparation"
 output: html_notebook
 ---
 
-#Peat Depths: model selection script
+#Peat Depths: data preparation script
 
 ## Packages 
 ```{r}
@@ -23,26 +23,14 @@ list.files(path = "../data/peat_depth_data/")
 
 I don't think we need this, we're basically recreating it.  Its the 'input data' from the old model.  currently peat depth data is not in there
 ```{r}
-fgdb <- "../data/PeatDepth.gdb"
-  # List all feature classes in a file geodatabase
-  subset(ogrDrivers(), grepl("GDB", name))
-  fc_list <- ogrListLayers(fgdb)
-  print(fc_list)
+# fgdb <- "../data/PeatDepth.gdb"
+#   # List all feature classes in a file geodatabase
+#   subset(ogrDrivers(), grepl("GDB", name))
+#   fc_list <- ogrListLayers(fgdb)
+#   print(fc_list)
 ```
 
 
-### Import peat depth file
-```{r}
-pdshp <- "../data/peat_depth_data/Combined_Peat_Depth_Survey_Data_NOV2012_ALLDATA.shp"
-ogrInfo(pdshp)
-
-#save the shapefile into an object
-peat.depth <- readOGR(dsn = pdshp, verbose = TRUE)
-
-# Determine the FC extent, projection, and attribute information
-#summary(peat.depth)
-  # plot(peat.depth, pch = 21, cex = 0.25)
-```
 
 ## Import environmental and topographic data
 ```{r}
@@ -72,8 +60,6 @@ peat.depth <- readOGR(dsn = pdshp, verbose = TRUE)
 ```{r}
 # #save to file
 # save(list = c("elev", "surf", "inflow", "outflow", "slope", "aspect"), file = "../data/topo_env_data.rda")
-
-load(file = "../data/topo_env_data.rda")
 ```
 
 ## Import UKCP09 climate data
@@ -95,47 +81,29 @@ load(file = "../data/ukcp09GriddedDataAnn.rda")
 
 resample rasters
 ```{r}
-# resample: x = raster to be resampled, y = raster to be resampled to
-# ls(pattern = "1960_90")
-# gdd_1960_90_ann <- resample(gdd_1960_90_ann, elev)
-# gsl_1960_90_ann <- resample(gsl_1960_90_ann, elev)
-# rain_1960_90_annual <- resample(rain_1960_90_annual, elev)
-# rain_daily_mean_1960_90_annual <- resample(rain_daily_mean_1960_90_annual, elev)
-# raindays_10mm_1960_90_annual <- resample(raindays_10mm_1960_90_annual, elev)
-# raindays_1mm_1960_90_annual <- resample(raindays_1mm_1960_90_annual, elev)
-# temp_max_1960_90_annual <- resample(temp_max_1960_90_annual, elev)
-# temp_mean_1960_90_annual <- resample(temp_mean_1960_90_annual, elev)
-# temp_min_1960_90_annual <- resample(temp_min_1960_90_annual, elev)
+#resample: x = raster to be resampled, y = raster to be resampled to
+ls(pattern = "1960_90")
+gdd_1960_90_ann <- resample(gdd_1960_90_ann, elev)
+gsl_1960_90_ann <- resample(gsl_1960_90_ann, elev)
+rain_1960_90_annual <- resample(rain_1960_90_annual, elev)
+rain_daily_mean_1960_90_annual <- resample(rain_daily_mean_1960_90_annual, elev)
+raindays_10mm_1960_90_annual <- resample(raindays_10mm_1960_90_annual, elev)
+raindays_1mm_1960_90_annual <- resample(raindays_1mm_1960_90_annual, elev)
+temp_max_1960_90_annual <- resample(temp_max_1960_90_annual, elev)
+temp_mean_1960_90_annual <- resample(temp_mean_1960_90_annual, elev)
+temp_min_1960_90_annual <- resample(temp_min_1960_90_annual, elev)
 ```
 
 ### Save resampled climate data
 ```{r}
-# # save all annual grids ----
-#   saveRDS(file = "../data/ukcp09GriddedDataAnnPrepd.rds", object = c(
-#     "gdd_1960_90_ann ", "gsl_1960_90_ann",
-#     "rain_1960_90_annual", "rain_daily_mean_1960_90_annual",
-#     "raindays_1mm_1960_90_annual", "raindays_10mm_1960_90_annual",
-#     "temp_mean_1960_90_annual", "temp_min_1960_90_annual", "temp_max_1960_90_annual"))
+# save all annual grids ----
+  save(file = "../data/ukcp09GriddedDataAnnPrepd.rds", list = c(
+    "gdd_1960_90_ann", "gsl_1960_90_ann",
+    "rain_1960_90_annual", "rain_daily_mean_1960_90_annual",
+    "raindays_1mm_1960_90_annual", "raindays_10mm_1960_90_annual",
+    "temp_mean_1960_90_annual", "temp_min_1960_90_annual", 
+    "temp_max_1960_90_annual"))
 ```
 
 
-
-
-
-## Create input dataset
-
-```{r}
-# input.data <- as.data.frame(peat.depth$PEAT_DEPTH)
-# names(input.data) <- "PEAT_DEPTH"
-# input.data$elev <- extract(elev, coordinates(peat.depth)[,1:2])
-# input.data$aspect <- extract(aspect, coordinates(peat.depth)[,1:2])
-# input.data$slope <- extract(slope, coordinates(peat.depth)[,1:2])
-#need to add the other variables
-```
-
-## export to file
-
-```{r}
-#saveRDS(input.data, file="data/input.data.rds")
-#write.csv(input.data, file = "input_data.csv", row.names = F)
-```
+That's it, now go to peat_depth_make_training_data.Rmd

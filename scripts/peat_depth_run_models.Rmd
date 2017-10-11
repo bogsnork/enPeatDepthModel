@@ -1,0 +1,115 @@
+---
+title: "England Peat Depth Model: run models"
+output: html_notebook
+---
+
+#Peat Depths: run models
+
+## Packages 
+```{r}
+library(raster)
+library(rgdal)
+library(randomForest)
+library(caTools)
+library(ggplot2)
+```
+
+## Load data
+```{r}
+load(file = "../data/input.data.rds")
+```
+
+
+## Make training and test sets
+
+```{r}
+set.seed(123)
+split <- sample.split(input.data$PEAT_DEPTH, SplitRatio = 2/3)
+training_set <- subset(input.data, split == TRUE)
+test_set <- subset(input.data, split == FALSE)
+```
+
+
+## Minimal models
+
+### regression
+
+run model
+```{r}
+#linear model
+# M.lm.1 <- lm(PEAT_DEPTH ~ 
+#                      elev + 
+#                      aspect + 
+#                      slope + 
+#                      rain_ann + 
+#                      temp_mean +
+#                      lon +
+#                      lat, 
+#                    data=training_set)
+# saveRDS(M.lm.1, file = "../data/models/M.lm.1")
+```
+
+plot and output
+```{r}
+load(file = "../data/models/M.lm.1")
+summary(M.lm.1)
+M.lm.1
+
+par(mfrow = c(2,2))
+plot(M.lm.1)
+par(mfrow = c(1,1))
+
+pred.lm <- predict(M.lm.1, test_set[-1])  
+test.err.lm <- mean((test_set$PEAT_DEPTH - pred.lm)^2)  
+test.err.lm
+```
+
+
+```{r}
+  #random forest
+# M.rf.1 <- randomForest(PEAT_DEPTH ~ 
+#                          elev + 
+#                          aspect + 
+#                          slope + 
+#                          rain_ann + 
+#                          temp_mean +
+#                          lon +
+#                          lat, 
+#                        data=training_set)  
+# 
+# saveRDS(M.rf.1, file = "../data/models/M.rf.1")
+```
+
+
+```{r}
+load(file = "../data/models/M.rf.1")
+M.rf.1
+plot(M.rf.1)
+```
+
+### try with caret
+
+
+#### Make training and test set
+```{r}
+library(caret)
+
+inTrain <- createDataPartition(y = input.data$PEAT_DEPTH, 
+                               p = .75, # The percentage of data in the training set
+                               list = FALSE) # The format of the results
+
+training <- input.data[inTrain,]
+testing <- input.data[-inTrain,]
+nrow(training); nrow(testing)
+```
+
+#### run model
+
+```{r}
+M.rf.2 <- train(PEAT_DEPTH ~ .,
+                data=training, 
+                method = "rf")
+
+saveRDS(M.rf.1, file = "../data/models/M.rf.1")
+```
+
