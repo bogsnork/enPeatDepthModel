@@ -1,7 +1,7 @@
 ---
 title: "England Peat Depth Model: Data Preparation"
 output: html_notebook
----
+--- 
 
 #Peat Depths: data preparation script
 
