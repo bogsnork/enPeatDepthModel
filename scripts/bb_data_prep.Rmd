@@ -1,33 +1,19 @@
 ---
-title: "England Peat Depth Model: Data Preparation"
+title: "England Blanket Bog Model: Data Preparation"
 output: html_notebook
 ---
 
-#Peat Depths: data preparation script
 
 ## Packages 
 ```{r}
 library(raster)
 library(rgdal)
-library(eply) # for unquoting ls objects
 ```
 
 
 ## Import data ----
 ```{r}
 list.files(path = "../data")
-list.files(path = "../data/peat_depth_data/")
-```
-
-### Import the main file geodatabase 
-
-I don't think we need this, we're basically recreating it.  Its the 'input data' from the old model.  currently peat depth data is not in there
-```{r}
-# fgdb <- "../data/PeatDepth.gdb"
-#   # List all feature classes in a file geodatabase
-#   subset(ogrDrivers(), grepl("GDB", name))
-#   fc_list <- ogrListLayers(fgdb)
-#   print(fc_list)
 ```
 
 
@@ -58,8 +44,11 @@ aspect <- terrain(x = elev, opt = "aspect", unit = "degrees", neighbors = 8)
 
 ## Save environmental and topographic data to file
 ```{r}
-#save to file
-save(elev, surf, inflow, outflow, slope, aspect, file = "../data/topo_env_data.rda")
+#save to raster stack then geotiff (might work better than .rda)
+topo_env_stack <- stack(elev, surf, inflow, outflow, slope, aspect)
+writeRaster(x = topo_env_stack, filename = "../data/topo_env_data.tif")
+
+#save(elev, surf, inflow, outflow, slope, aspect, file = "../data/topo_env_data.rda")
 ```
 
 ## Import UKCP09 climate data
@@ -96,15 +85,14 @@ temp_min_1960_90_annual <- resample(temp_min_1960_90_annual, elev)
 
 ### Save resampled climate data
 ```{r}
-# save all annual grids ----
-save(gdd_1960_90_ann, gsl_1960_90_ann,
+climate_stack <- stack(gdd_1960_90_ann, gsl_1960_90_ann,
   rain_1960_90_annual, rain_daily_mean_1960_90_annual,
   raindays_1mm_1960_90_annual, raindays_10mm_1960_90_annual,
   temp_mean_1960_90_annual, temp_min_1960_90_annual, 
-  temp_max_1960_90_annual, 
-  file = "../data/ukcp09GriddedDataAnnPrepd.rda", 
-  precheck = TRUE)
+  temp_max_1960_90_annual)
+writeRaster(x = climate_stack, filename = "../data/ukcp09GriddedDataAnnPrepd.tif")
+rm(climate_stack)
 ```
 
 
-That's it, now go to peat_depth_make_training_data.Rmd
+That's it, now go to bb_make_training_data.Rmd
