@@ -1,0 +1,138 @@
+---
+title: "England Peat Depth Model: Create training data"
+output: html_notebook
+---
+
+#Peat Depths: create training data script
+
+## Packages 
+```{r}
+library(raster)
+library(rgdal)
+library(rgeos)
+```
+
+## Import and prepare data
+
+### Import observations
+```{r}
+pdshp <- "../data/peat_depth_data/Combined_Peat_Depth_Survey_Data_NOV2012_ALLDATA.shp"
+ogrInfo(pdshp)
+
+#save the shapefile into an object
+observationsSPDF <- readOGR(dsn = pdshp, verbose = TRUE)
+
+rm(pdshp)
+# Determine the FC extent, projection, and attribute information
+#summary(observations)
+  # plot(observations, pch = 21, cex = 0.25)
+```
+### Prepare bounding object
+
+```{r}
+#import bounding file
+counties <- readOGR(dsn = "../data/County_polygon.shp", verbose = TRUE)
+counties <- spTransform(counties, CRSobj = proj4string(observationsSPDF))
+levels(counties@data$NAME)
+
+bounding <- counties[which(counties@data$NAME == "Lancashire County" | counties@data$NAME == "Cumbria County"),]
+plot(bounding)
+```
+
+
+### prepare observations
+```{r}
+#filter observations
+observations <- raster::crop(observationsSPDF, extent(bounding))
+plot(observations)
+
+# observations <- observationsSPDF[which(observationsSPDF@data$xxx == xxx | observationsSPDF@data$xxx == xxx),]
+# summary(observations); class(observations)
+
+#rm(observationsSPDF)
+```
+
+
+### Import predictor data
+```{r}
+# Import environmental and topographic data
+#load(file = "../data/topo_env_data.rda")
+
+elev <- raster("../data/topo_env_data.tif", band = 1)
+surf <- raster("../data/topo_env_data.tif", band = 2)
+inflow <- raster("../data/topo_env_data.tif", band = 3)
+outflow <- raster("../data/topo_env_data.tif", band = 4)
+slope <- raster("../data/topo_env_data.tif", band = 5)
+aspect <- raster("../data/topo_env_data.tif", band = 6)
+
+# Import UKCP09 climate data
+#load(file = "../data/ukcp09GriddedDataAnnPrepd.rda")
+gdd_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 1)
+gsl_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 2)
+rain_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 3)
+rain_daily_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 4)
+raindays_1mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 5)
+raindays_10mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 6)
+temp_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 7)
+temp_min_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 8)
+temp_max_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 9)
+```
+
+## Create input dataset
+
+```{r}
+#create dataframe with peat depth as first col
+input.data <- as.data.frame(observations$PEAT_DEPTH)
+names(input.data) <- "PEAT_DEPTH"
+
+#populate longitude and lattitude
+input.data$lon <- coordinates(observations)[,1]
+input.data$lat <- coordinates(observations)[,2]
+
+#extract environmental and topographic data for each peat depth measurement
+input.data$elev <- extract(
+  elev, coordinates(observations)[,1:2])
+input.data$aspect <- extract(
+  aspect, coordinates(observations)[,1:2])
+input.data$slope <- extract(
+  slope, coordinates(observations)[,1:2])
+input.data$outflow <- extract(
+  outflow, coordinates(observations)[,1:2])
+input.data$inflow <- extract(
+  inflow, coordinates(observations)[,1:2])
+input.data$surf <- extract(
+  surf, coordinates(observations)[,1:2])
+
+#extract climate data for each peat depth measurement
+input.data$gdd <- extract(
+  gdd_1960_90_ann, coordinates(observations)[,1:2])
+input.data$gsl <- extract(
+  gsl_1960_90_ann, coordinates(observations)[,1:2])
+input.data$rain_ann <- extract(
+  rain_1960_90_annual, coordinates(observations)[,1:2])
+input.data$rain_daily <- extract(
+  rain_daily_mean_1960_90_annual, coordinates(observations)[,1:2])
+input.data$raindays_10mm <- extract(
+  raindays_10mm_1960_90_annual, coordinates(observations)[,1:2])
+input.data$raindays_1mm <- extract(
+  raindays_1mm_1960_90_annual, coordinates(observations)[,1:2])
+input.data$temp_mean <- extract(
+  temp_mean_1960_90_annual, coordinates(observations)[,1:2])
+input.data$temp_min <- extract(
+  temp_min_1960_90_annual, coordinates(observations)[,1:2])
+input.data$temp_max <- extract(
+  temp_max_1960_90_annual, coordinates(observations)[,1:2])
+```
+
+### remove errors and outliers from training data
+```{r}
+summary(input.data)
+```
+
+
+## export to file
+
+```{r}
+save(input.data, file="../data/input.data.rds")
+write.csv(input.data, file = "../data/input_data.csv", row.names = F)
+```
