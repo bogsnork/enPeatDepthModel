@@ -9,11 +9,12 @@ output: html_notebook
 ```{r}
 library(raster)
 library(rgdal)
+library(rgeos)
 ```
 
-## Import data
+## Import and prepare data
 
-### Import peat depth file
+### Import observations
 ```{r}
 pdshp <- "../data/peat_depth_data/Combined_Peat_Depth_Survey_Data_NOV2012_ALLDATA.shp"
 ogrInfo(pdshp)
@@ -26,6 +27,31 @@ rm(pdshp)
 #summary(observations)
   # plot(observations, pch = 21, cex = 0.25)
 ```
+### Prepare bounding object
+
+```{r}
+#import bounding file
+counties <- readOGR(dsn = "../data/County_polygon.shp", verbose = TRUE)
+counties <- spTransform(counties, CRSobj = proj4string(observationsSPDF))
+levels(counties@data$NAME)
+
+bounding <- counties[which(counties@data$NAME == "Lancashire County" | counties@data$NAME == "Cumbria County"),]
+plot(bounding)
+```
+
+
+### prepare observations
+```{r}
+#filter observations
+observations <- raster::crop(observationsSPDF, extent(bounding))
+plot(observations)
+
+# observations <- observationsSPDF[which(observationsSPDF@data$xxx == xxx | observationsSPDF@data$xxx == xxx),]
+# summary(observations); class(observations)
+
+#rm(observationsSPDF)
+```
+
 
 ### Import predictor data
 ```{r}
@@ -50,17 +76,6 @@ raindays_10mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", 
 temp_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 7)
 temp_min_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 8)
 temp_max_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 9)
-```
-
-## prepare observations
-```{r}
-#filter observations
-observations <- observationsSPDF
-
-# observations <- observationsSPDF[which(observationsSPDF@data$xxx == xxx | observationsSPDF@data$xxx == xxx),]
-# summary(observations); class(observations)
-
-rm(observationsSPDF)
 ```
 
 ## Create input dataset
