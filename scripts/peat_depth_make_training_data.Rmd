@@ -6,7 +6,7 @@ output: html_notebook
 #Peat Depths: create training data script
 
 ## Packages 
-```{r}
+```{r, include=FALSE}
 library(raster)
 library(rgdal)
 library(rgeos)
@@ -32,9 +32,11 @@ rm(pdshp)
 ```{r}
 #import bounding file
 counties <- readOGR(dsn = "../data/County_polygon.shp", verbose = TRUE)
+# transform to match projectsions
 counties <- spTransform(counties, CRSobj = proj4string(observationsSPDF))
 levels(counties@data$NAME)
 
+# filter 
 bounding <- counties[which(counties@data$NAME == "Lancashire County" | counties@data$NAME == "Cumbria County"),]
 plot(bounding)
 ```
@@ -42,16 +44,28 @@ plot(bounding)
 
 ### prepare observations
 ```{r}
-#filter observations
+#crop observations by bounding box
 observations <- raster::crop(observationsSPDF, extent(bounding))
 plot(observations)
+plot(bounding, add = TRUE)
+#this doesn't work as expected: it uses the bounding box around the counties which is bigger than the counties.  I can't get it to work properly, but for the moment it doesn't matter, because all we want is to be able to subset it somehow.  
 
+# filter observations by variable
 # observations <- observationsSPDF[which(observationsSPDF@data$xxx == xxx | observationsSPDF@data$xxx == xxx),]
 # summary(observations); class(observations)
 
 #rm(observationsSPDF)
 ```
 
+
+
+```{r}
+#reduce the number of records for performance purposes
+observations <- observations[sample(x = 1:nrow(observations), 
+                                    size = 10000, 
+                                    replace = TRUE), ]
+table(observations$PEATTYPE)
+```
 
 ### Import predictor data
 ```{r}
@@ -86,8 +100,11 @@ input.data <- as.data.frame(observations$PEAT_DEPTH)
 names(input.data) <- "PEAT_DEPTH"
 
 #populate longitude and lattitude
-input.data$lon <- coordinates(observations)[,1]
-input.data$lat <- coordinates(observations)[,2]
+#input.data$lon <- coordinates(observations)[,1] #not a predictor
+#input.data$lat <- coordinates(observations)[,2] #not a predictor
+
+#populate peat type
+#input.data$PEATTYPE <- observations$PEATTYPE #not a predictor
 
 #extract environmental and topographic data for each peat depth measurement
 input.data$elev <- extract(
@@ -123,6 +140,8 @@ input.data$temp_min <- extract(
 input.data$temp_max <- extract(
   temp_max_1960_90_annual, coordinates(observations)[,1:2])
 ```
+
+
 
 ### remove errors and outliers from training data
 ```{r}
