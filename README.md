@@ -51,8 +51,39 @@ The model will be trained on `NUMBER OF MEASUREMENTS` measured peat depths *DETA
 ## Models
 *explain what models are used, what models were tried and rationale for choice.* 
 
+###Model 1
+`Mrf1` is a random forest model run on a subset of the predictor and observation data.  It uses observation data from Cumbria, Lancashire and the North Pennines, which has been further reduced by subsampling it down from over 22,237 records to 10,000 (purely for processing speed).  
+
+Model results are as follows: 
+
+    Random Forest 
+    7502 samples
+    15 predictor
+    mtry  RMSE      Rsquared   MAE     
+    2    50.63915  0.7600158  34.76881
+    8    50.82632  0.7582551  34.83158
+    15    51.01271  0.7565077  34.94512
+
+|rf variable |importance
+|:----------- |:---
+|rain_ann       |100.00
+|slope          | 93.69
+|rain_daily     | 92.65
+|elev           | 90.44
+|gdd            | 81.07
+|gsl            | 79.65
+|raindays_10mm  | 79.30
+|raindays_1mm   | 76.97
+|aspect         | 76.74
+|temp_mean      | 76.06
+|temp_max       | 68.77
+|temp_min       | 67.89
+|outflow        | 50.03
+|inflow         | 43.90
+|surf           |  0.00
+
+
 ## Project information
-This project was carried out in `R` (R Core Team, 2016) and is a mixture of `R script` (`.R`) and `Rmarkdown  Notebook` (`.rmd`).  The code in this repository is intended to be run in the order below.  However any data output from one script that is to be passed forward to a later script has been saved with `save()` as a `.rds` file.  The later script then loads the `.rds` file.  This is particularly useful for the `.Rmd` files which can all be independently 'knitted'.  Currently, no scripts are 'sourced' into another script.  
 
 |Script filename|Type|Purpose|
 |:--------------|:---|:---------------------------------------------|
