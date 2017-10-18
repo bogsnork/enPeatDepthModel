@@ -50,10 +50,30 @@ nrow(training); nrow(testing)
 Need the latest version of caret from github to avoid known bug.
 ```{r}
 Mrf1 <- train(PEAT_DEPTH ~ .,
-                data = training, 
-                method = "rf")
+              data = training, 
+              method = "rf", 
+              importance = TRUE)
 
 save(Mrf1, file = "../data/models/Mrf1.rds")
 
 Mrf1
 ```
+
+
+```{r}
+plot(varImp(object = Mrf1), main= "RF - Variable Importance")
+```
+
+
+### Predict from model
+
+```{r}
+#Predictions
+predictions <- predict(object = Mrf1, newdata = testing, type="raw")
+
+plot(predictions ~ testing[,1])
+
+
+```
+
+
