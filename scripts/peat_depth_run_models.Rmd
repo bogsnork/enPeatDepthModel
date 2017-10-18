@@ -64,6 +64,10 @@ Mrf1
 plot(varImp(object = Mrf1), main= "RF - Variable Importance")
 ```
 
+```{r}
+varImp(object = Mrf1)
+```
+
 
 ### Predict from model
 

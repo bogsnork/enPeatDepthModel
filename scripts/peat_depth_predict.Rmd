@@ -1,0 +1,89 @@
+---
+title: 'England Peat Depth Model: predict from model'
+output:
+  html_notebook: default
+---
+
+## Packages 
+```{r}
+library(raster)
+library(rgdal)
+
+library(parallel)
+library(doParallel)
+```
+
+## Load data
+```{r}
+# model
+Model <- Mrf1 
+
+
+#predictors
+
+
+# Import environmental and topographic data
+elev <- raster("../data/topo_env_data.tif", band = 1)
+surf <- raster("../data/topo_env_data.tif", band = 2)
+inflow <- raster("../data/topo_env_data.tif", band = 3)
+outflow <- raster("../data/topo_env_data.tif", band = 4)
+slope <- raster("../data/topo_env_data.tif", band = 5)
+aspect <- raster("../data/topo_env_data.tif", band = 6)
+
+# Import UKCP09 climate data
+gdd_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 1)
+gsl_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 2)
+rain_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 3)
+rain_daily_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 4)
+raindays_1mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 5)
+raindays_10mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 6)
+temp_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 7)
+temp_min_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 8)
+temp_max_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 9)
+```
+
+## Prepare data
+
+make a raster stack
+```{r}
+Model$coefnames
+
+predictors <- stack(
+  elev, aspect, slope, outflow, inflow, surf,
+  gdd_1960_90_ann, gsl_1960_90_ann,
+  rain_1960_90_annual, rain_daily_mean_1960_90_annual,
+  raindays_10mm_1960_90_annual, raindays_1mm_1960_90_annual,
+  temp_mean_1960_90_annual, temp_min_1960_90_annual, 
+  temp_max_1960_90_annual
+)
+
+names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow", "surf", 
+                       "gdd", "gsl", "rain_ann", "rain_daily", "raindays_10mm", 
+                       "raindays_1mm", "temp_mean", "temp_min", "temp_max")
+```
+
+crop to training data extent
+
+```{r}
+#load observations to get extent
+# pdshp <- "../data/peat_depth_data/Combined_Peat_Depth_Survey_Data_NOV2012_ALLDATA.shp"
+# observationsSPDF <- readOGR(dsn = pdshp, verbose = TRUE)
+# 
+# boundbox <- observationsSPDF@bbox; boundbox 
+
+predictors <- raster::crop(x = predictors, y = bounding)
+```
+
+## Predict outputs from predictors
+
+```{r}
+output <- raster::predict(predictors, Model, type="raw", progress="text")
+
+writeRaster(x = output, filename = "../outputs/PeatDepthModelRF1a.tif")
+
+plot(output)
+
+```
+
+
+

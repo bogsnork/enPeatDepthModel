@@ -37,7 +37,7 @@ counties <- spTransform(counties, CRSobj = proj4string(observationsSPDF))
 levels(counties@data$NAME)
 
 # filter 
-bounding <- counties[which(counties@data$NAME == "Lancashire County" | counties@data$NAME == "Cumbria County"),]
+bounding <- counties[which(counties@data$NAME == "Lancashire County"),]
 plot(bounding)
 ```
 
@@ -61,10 +61,10 @@ plot(bounding, add = TRUE)
 
 ```{r}
 #reduce the number of records for performance purposes
-observations <- observations[sample(x = 1:nrow(observations), 
-                                    size = 10000, 
-                                    replace = TRUE), ]
-table(observations$PEATTYPE)
+# observations <- observations[sample(x = 1:nrow(observations), 
+#                                     size = 10000, 
+#                                     replace = TRUE), ]
+# table(observations$PEATTYPE)
 ```
 
 ### Import predictor data
