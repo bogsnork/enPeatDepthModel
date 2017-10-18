@@ -51,7 +51,8 @@ The model will be trained on `NUMBER OF MEASUREMENTS` measured peat depths *DETA
 ## Models
 *explain what models are used, what models were tried and rationale for choice.* 
 
-###Model 1  
+
+###Model 1   
 `Mrf1` is a random forest model run on a subset of the predictor and observation data.  It uses observation data from Cumbria, Lancashire and the North Pennines, which has been further reduced by subsampling it down from over 22,237 records to 10,000 (purely for processing speed).  
 
 Model results are as follows: 
