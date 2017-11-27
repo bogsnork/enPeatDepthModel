@@ -1,0 +1,149 @@
+---
+title: "England Peat Depth Model: Create training data"
+output: html_notebook
+---
+
+## Packages 
+```{r}
+library(raster)
+library(rgdal)
+
+library(tidyverse)
+```
+
+## Import data
+
+### Import observations
+
+```{r}
+
+observations <- readOGR(dsn = "../data/peat_depth_obs.shp", verbose = TRUE)
+
+```
+
+
+
+### Import predictors
+```{r}
+#predictors
+
+# 
+# # Import environmental and topographic data
+# elev <- raster("../data/topo_env_data.tif", band = 1)
+# surf <- raster("../data/topo_env_data.tif", band = 2)
+# inflow <- raster("../data/topo_env_data.tif", band = 3)
+# outflow <- raster("../data/topo_env_data.tif", band = 4)
+# slope <- raster("../data/topo_env_data.tif", band = 5)
+# aspect <- raster("../data/topo_env_data.tif", band = 6)
+# moorline <- raster("../data/topo_env_data.tif", band = 7)
+# 
+# # Import UKCP09 climate data
+# gdd_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 1)
+# gsl_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 2)
+# rain_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 3)
+# rain_daily_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 4)
+# raindays_1mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 5)
+# raindays_10mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 6)
+# temp_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 7)
+# temp_min_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 8)
+# temp_max_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 9)
+```
+
+make a raster stack
+```{r}
+# predictors <- stack(
+#   elev, aspect, slope, outflow, inflow, 
+#   gdd_1960_90_ann, gsl_1960_90_ann,
+#   rain_1960_90_annual, rain_daily_mean_1960_90_annual,
+#   raindays_10mm_1960_90_annual, raindays_1mm_1960_90_annual,
+#   temp_mean_1960_90_annual, temp_min_1960_90_annual, 
+#   temp_max_1960_90_annual
+# )
+# 
+# names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow",
+#                        "gdd", "gsl", "rain_ann", "rain_daily", "raindays_10mm", 
+#                        "raindays_1mm", "temp_mean", "temp_min", "temp_max")
+```
+
+crop to training data extent
+
+```{r}
+boundbox <- observations@bbox; boundbox 
+
+predictors <- raster::crop(x = predictors, y = boundbox)
+
+predictors.all <- stack(predictors)
+```
+
+export
+```{r}
+#writeRaster(x = predictors.all, filename = "../data/predictor_stack.tif", overwrite = TRUE)
+```
+
+import cropped raster stack
+
+```{r}
+elev <- raster("../data/predictor_stack.tif", band = 1)
+aspect <- raster("../data/predictor_stack.tif", band = 2)
+slope <- raster("../data/predictor_stack.tif", band = 3)
+outflow <- raster("../data/predictor_stack.tif", band = 4)
+inflow <- raster("../data/predictor_stack.tif", band = 5)
+gdd <- raster("../data/predictor_stack.tif", band = 6)
+gsl <- raster("../data/predictor_stack.tif", band = 7)
+rain_ann <- raster("../data/predictor_stack.tif", band = 8)
+rain_daily <- raster("../data/predictor_stack.tif", band = 9)
+raindays_10mm <- raster("../data/predictor_stack.tif", band = 10)
+raindays_1mm <- raster("../data/predictor_stack.tif", band = 11)
+temp_mean <- raster("../data/predictor_stack.tif", band = 12)
+temp_min <- raster("../data/predictor_stack.tif", band = 13)
+temp_max <- raster("../data/predictor_stack.tif", band = 14)
+```
+
+
+## Create input dataset
+
+```{r}
+#create dataframe with peat depth as first col
+input.data <- as.data.frame(observations$PEAT_DEPTH)
+names(input.data) <- "PEAT_DEPTH"
+
+#populate longitude and lattitude
+#input.data$lon <- coordinates(observations)[,1] #not a predictor
+#input.data$lat <- coordinates(observations)[,2] #not a predictor
+
+#populate peat type
+#input.data$PEATTYPE <- observations$PEATTYPE #not a predictor
+
+#extract environmental and topographic data for each peat depth measurement
+input.data$elev <- raster::extract(elev, coordinates(observations)[,1:2])
+input.data$aspect <- raster::extract(aspect, coordinates(observations)[,1:2])
+input.data$slope <- raster::extract(slope, coordinates(observations)[,1:2])
+input.data$outflow <- raster::extract(outflow, coordinates(observations)[,1:2])
+input.data$inflow <- raster::extract(inflow, coordinates(observations)[,1:2])
+
+#extract climate data for each peat depth measurement
+input.data$gdd <- raster::extract(gdd, coordinates(observations)[,1:2])
+input.data$gsl <- raster::extract(gsl, coordinates(observations)[,1:2])
+input.data$rain_ann <- raster::extract(rain_ann, coordinates(observations)[,1:2])
+input.data$rain_daily <- raster::extract(rain_daily, coordinates(observations)[,1:2])
+input.data$raindays_10mm <- raster::extract(raindays_10mm, coordinates(observations)[,1:2])
+input.data$raindays_1mm <- raster::extract(raindays_1mm, coordinates(observations)[,1:2])
+input.data$temp_mean <- raster::extract(temp_mean, coordinates(observations)[,1:2])
+input.data$temp_min <- raster::extract(temp_min, coordinates(observations)[,1:2])
+input.data$temp_max <- raster::extract(temp_max, coordinates(observations)[,1:2])
+```
+
+
+
+### remove errors and outliers from training data
+```{r}
+summary(input.data)
+```
+
+
+## export to file
+
+```{r}
+save(input.data, file="../data/input.data.rds")
+write.csv(input.data, file = "../data/input_data.csv", row.names = F)
+```
