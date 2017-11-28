@@ -68,11 +68,11 @@ make a raster stack
 crop to training data extent
 
 ```{r}
-boundbox <- observations@bbox; boundbox 
-
-predictors <- raster::crop(x = predictors, y = boundbox)
-
-predictors.all <- stack(predictors)
+# boundbox <- observations@bbox; boundbox 
+# 
+# predictors <- raster::crop(x = predictors, y = boundbox)
+# 
+# predictors.all <- stack(predictors)
 ```
 
 export

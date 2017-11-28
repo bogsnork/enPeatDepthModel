@@ -1,0 +1,94 @@
+---
+title: 'England Blanket Bog Model: predict from model'
+output:
+  html_notebook: default
+---
+
+## Packages 
+```{r}
+library(raster)
+library(rgdal)
+
+library(parallel)
+library(doParallel)
+```
+
+## Load data
+```{r}
+# model
+load("../data/models/Mrf1.rds")
+Model <- Mrf1 
+Model$coefnames
+```
+
+### Import predictors
+
+```{r}
+#import predictor stack
+elev <- raster("../data/predictor_stack.tif", band = 1)
+aspect <- raster("../data/predictor_stack.tif", band = 2)
+slope <- raster("../data/predictor_stack.tif", band = 3)
+outflow <- raster("../data/predictor_stack.tif", band = 4)
+inflow <- raster("../data/predictor_stack.tif", band = 5)
+gdd <- raster("../data/predictor_stack.tif", band = 6)
+gsl <- raster("../data/predictor_stack.tif", band = 7)
+rain_ann <- raster("../data/predictor_stack.tif", band = 8)
+rain_daily <- raster("../data/predictor_stack.tif", band = 9)
+raindays_10mm <- raster("../data/predictor_stack.tif", band = 10)
+raindays_1mm <- raster("../data/predictor_stack.tif", band = 11)
+temp_mean <- raster("../data/predictor_stack.tif", band = 12)
+temp_min <- raster("../data/predictor_stack.tif", band = 13)
+temp_max <- raster("../data/predictor_stack.tif", band = 14)
+
+predictors <- stack(elev, aspect, slope, outflow, inflow, gdd, gsl, rain_ann, rain_daily, 
+                    raindays_10mm, raindays_1mm, temp_mean, temp_min, temp_max)
+
+names(predictors) <-names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow",
+                                           "gdd", "gsl", "rain_ann", "rain_daily", "raindays_10mm",
+                                           "raindays_1mm", "temp_mean", "temp_min", "temp_max")
+```
+
+or do the following: 
+if necessary crop to prediction extent
+```{r}
+# #crop to prediction extent
+# 
+# 
+# #load observations to get extent
+# #observationsSPDF <- readOGR(dsn = "../data/observations.shp", verbose = TRUE)
+# boundbox <- observations@bbox; boundbox 
+# 
+# predictors <- raster::crop(x = predictors, y = boundbox)
+```
+
+## Predict outputs from predictors
+
+```{r}
+output <- raster::predict(predictors, Model)
+
+writeRaster(x = output, filename = "../outputs/pd_lm_mod2a.tif", overwrite = TRUE)
+
+plot(output)
+
+```
+
+
+# Predict a number of models
+
+```{r}
+# output <- raster::predict(predictors, M.rf.8a.final, type="prob", progress="text", 
+#                           response = "vote", index = 2)
+# writeRaster(x = output, filename = "../outputs/BlanketBogRFModel8a.tif")
+# plot(output)
+# 
+# output <- raster::predict(predictors, M.rf.8c.final, type="prob", progress="text", 
+#                           response = "vote", index = 2)
+# writeRaster(x = output, filename = "../outputs/BlanketBogRFModel8c.tif")
+# plot(output)
+# 
+# output <- raster::predict(predictors, M.rf.8d.final, type="prob", progress="text", 
+#                           response = "vote", index = 2)
+# writeRaster(x = output, filename = "../outputs/BlanketBogRFModel8d.tif")
+# plot(output)
+```
+
