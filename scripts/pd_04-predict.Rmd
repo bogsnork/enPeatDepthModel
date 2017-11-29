@@ -16,7 +16,7 @@ library(doParallel)
 ## Load data
 ```{r}
 # model
-load("../data/models/Mrf1.rds")
+#load("../data/models/Mrf1.rds")
 Model <- Mrf1 
 Model$coefnames
 ```
@@ -64,11 +64,11 @@ if necessary crop to prediction extent
 ## Predict outputs from predictors
 
 ```{r}
-output <- raster::predict(predictors, Model)
-
-writeRaster(x = output, filename = "../outputs/pd_lm_mod2a.tif", overwrite = TRUE)
-
-plot(output)
+# output <- raster::predict(predictors, Model)
+# 
+# writeRaster(x = output, filename = "../outputs/pd_lm_mod2a.tif", overwrite = TRUE)
+# 
+# plot(output)
 
 ```
 
@@ -76,19 +76,14 @@ plot(output)
 # Predict a number of models
 
 ```{r}
-# output <- raster::predict(predictors, M.rf.8a.final, type="prob", progress="text", 
-#                           response = "vote", index = 2)
-# writeRaster(x = output, filename = "../outputs/BlanketBogRFModel8a.tif")
-# plot(output)
-# 
-# output <- raster::predict(predictors, M.rf.8c.final, type="prob", progress="text", 
-#                           response = "vote", index = 2)
-# writeRaster(x = output, filename = "../outputs/BlanketBogRFModel8c.tif")
-# plot(output)
-# 
-# output <- raster::predict(predictors, M.rf.8d.final, type="prob", progress="text", 
-#                           response = "vote", index = 2)
-# writeRaster(x = output, filename = "../outputs/BlanketBogRFModel8d.tif")
-# plot(output)
+output <- raster::predict(predictors, Mlm2a, type="raw", progress="text",
+                          response = "vote", index = 2)
+writeRaster(x = output, filename = "../outputs/pd_lm_mod2a.tif")
+plot(output)
+
+output <- raster::predict(predictors, Mrf2a, type="raw", progress="text",
+                          response = "vote", index = 2)
+writeRaster(x = output, filename = "../outputs/pd_rf_mod2a.tif")
+plot(output)
 ```
 

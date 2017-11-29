@@ -17,7 +17,7 @@ library(tidyverse)
 
 ```{r}
 
-observations <- readOGR(dsn = "../data/peat_depth_obs.shp", verbose = TRUE)
+observations <- readOGR(dsn = "../data/peat_obs_YD.shp", verbose = TRUE)
 
 ```
 
@@ -27,57 +27,57 @@ observations <- readOGR(dsn = "../data/peat_depth_obs.shp", verbose = TRUE)
 ```{r}
 #predictors
 
-# 
-# # Import environmental and topographic data
-# elev <- raster("../data/topo_env_data.tif", band = 1)
-# surf <- raster("../data/topo_env_data.tif", band = 2)
-# inflow <- raster("../data/topo_env_data.tif", band = 3)
-# outflow <- raster("../data/topo_env_data.tif", band = 4)
-# slope <- raster("../data/topo_env_data.tif", band = 5)
-# aspect <- raster("../data/topo_env_data.tif", band = 6)
-# moorline <- raster("../data/topo_env_data.tif", band = 7)
-# 
-# # Import UKCP09 climate data
-# gdd_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 1)
-# gsl_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 2)
-# rain_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 3)
-# rain_daily_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 4)
-# raindays_1mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 5)
-# raindays_10mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 6)
-# temp_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 7)
-# temp_min_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 8)
-# temp_max_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 9)
+
+ # Import environmental and topographic data
+ elev <- raster("../data/topo_env_data.tif", band = 1)
+ surf <- raster("../data/topo_env_data.tif", band = 2)
+ inflow <- raster("../data/topo_env_data.tif", band = 3)
+ outflow <- raster("../data/topo_env_data.tif", band = 4)
+ slope <- raster("../data/topo_env_data.tif", band = 5)
+ aspect <- raster("../data/topo_env_data.tif", band = 6)
+ moorline <- raster("../data/topo_env_data.tif", band = 7)
+
+ # Import UKCP09 climate data
+ gdd_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 1)
+ gsl_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 2)
+ rain_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 3)
+ rain_daily_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 4)
+ raindays_1mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 5)
+ raindays_10mm_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 6)
+ temp_mean_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 7)
+ temp_min_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 8)
+ temp_max_1960_90_annual <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 9)
 ```
 
 make a raster stack
 ```{r}
-# predictors <- stack(
-#   elev, aspect, slope, outflow, inflow, 
-#   gdd_1960_90_ann, gsl_1960_90_ann,
-#   rain_1960_90_annual, rain_daily_mean_1960_90_annual,
-#   raindays_10mm_1960_90_annual, raindays_1mm_1960_90_annual,
-#   temp_mean_1960_90_annual, temp_min_1960_90_annual, 
-#   temp_max_1960_90_annual
-# )
-# 
-# names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow",
-#                        "gdd", "gsl", "rain_ann", "rain_daily", "raindays_10mm", 
-#                        "raindays_1mm", "temp_mean", "temp_min", "temp_max")
+ predictors <- stack(
+   elev, aspect, slope, outflow, inflow, 
+   gdd_1960_90_ann, gsl_1960_90_ann,
+   rain_1960_90_annual, rain_daily_mean_1960_90_annual,
+   raindays_10mm_1960_90_annual, raindays_1mm_1960_90_annual,
+   temp_mean_1960_90_annual, temp_min_1960_90_annual, 
+   temp_max_1960_90_annual
+ )
+ 
+ names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow",
+                        "gdd", "gsl", "rain_ann", "rain_daily", "raindays_10mm", 
+                        "raindays_1mm", "temp_mean", "temp_min", "temp_max")
 ```
 
 crop to training data extent
 
 ```{r}
-# boundbox <- observations@bbox; boundbox 
-# 
-# predictors <- raster::crop(x = predictors, y = boundbox)
-# 
-# predictors.all <- stack(predictors)
+boundbox <- observations@bbox; boundbox 
+ 
+ predictors <- raster::crop(x = predictors, y = boundbox)
+ 
+ predictors.all <- stack(predictors)
 ```
 
 export
 ```{r}
-#writeRaster(x = predictors.all, filename = "../data/predictor_stack.tif", overwrite = TRUE)
+writeRaster(x = predictors.all, filename = "../data/predictor_stack.tif", overwrite = TRUE)
 ```
 
 import cropped raster stack
@@ -140,6 +140,12 @@ input.data$temp_max <- raster::extract(temp_max, coordinates(observations)[,1:2]
 summary(input.data)
 ```
 
+```{r}
+dim(input.data)
+input.data <- input.data[which(is.na(input.data$elev) == FALSE),]
+input.data <- input.data[complete.cases(input.data),]
+dim(input.data)
+```
 
 ## export to file
 

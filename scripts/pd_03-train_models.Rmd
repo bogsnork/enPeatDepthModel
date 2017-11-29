@@ -21,10 +21,6 @@ library(doParallel)
 ## Load data
 ```{r}
 load(file = "../data/input.data.rds")
-
-dim(input.data)
-input.data <- input.data[which(is.na(input.data$elev) == FALSE),]
-input.data <- input.data[complete.cases(input.data),]
 dim(input.data)
 ```
 
@@ -51,8 +47,8 @@ inTrain <- createDataPartition(y = input.data$PEAT_DEPTH,
 
 training <- input.data[inTrain,]
 testing <- input.data[-inTrain,]
-nrow(training); nrow(testing)
 ```
+Training data has `r nrow(training)` records.  Testing data has `r nrow(testing)` records.  
 
 #### train model
 Need the latest version of caret from github to avoid known bug.
@@ -66,9 +62,7 @@ train linear model
 ```{r}
 Mlm2a <- train(PEAT_DEPTH ~ ., 
               data = training, 
-              method = "lm", 
-              trControl = params,  
-              metric = "Rsquared")
+              method = "lm")
 
 save(Mlm2a, file = "../data/models/Mlm2a.rds")
 
@@ -85,3 +79,33 @@ save(Mrf2a, file = "../data/models/Mrf2a.rds")
 
 Mrf2a
 ```
+
+## Evaluate models
+
+
+residuals????
+```{r}
+pd <- data.frame(residuals(Mlm2a))
+names(pd) <- "resid.Mlm2a"
+brks <- quantile(pd$resid.Mlm2a, na.rm=TRUE)
+
+hist(pd$resid.Mlm2a)
+```
+
+
+
+```{r}
+cvValues <- resamples(list(LM = Mlm2a, RF = Mrf2a))
+summary(cvValues)
+splom(cvValues, metric = "Rsquared")
+parallelplot(cvValues, metric = "Rsquared")
+dotplot(cvValues, metric = "Rsquared")
+```
+
+```{r}
+Diffs <- diff(cvValues, metric = "Rsquared")
+summary(Diffs)
+dotplot(Diffs, metric = "Rsquared")
+```
+
+## predict test data from model and 

@@ -28,6 +28,9 @@ have a look:
 dim(observationsSPDF)
 levels(observationsSPDF$PEATTYPE)
 hist(observationsSPDF$PEAT_DEPTH)
+table(observationsSPDF$PEATTYPE)
+plot(observationsSPDF)
+plot(model.area, add = TRUE)
 
 ```
 
@@ -44,6 +47,10 @@ observations <- raster::crop(x = observationsSPDF, y = boundbox)
 names(observations)
 #remove variables and include a new bbog variable
 observations <- observations[,c("PEAT_DEPTH", "PEATTYPE")]
+dim(observations)
+table(observations$PEATTYPE)
+plot(observations, pch = 4, cex = 0.1, col = "red")
+plot(model.area, add = TRUE)
 ```
 
 
@@ -56,6 +63,8 @@ don't need to do this
 # Export
 
 ```{r}
-writeOGR(obj = observations, dsn = "../data/peat_obs_YD.shp", driver = "ESRI Shapefile", verbose = FALSE, layer = "observations")
+writeOGR(obj = observations, dsn = "../data/peat_obs_YD.shp", 
+         driver = "ESRI Shapefile", 
+         verbose = FALSE, layer = "observations")
 ```
 
