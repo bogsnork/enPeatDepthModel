@@ -187,8 +187,8 @@ $(document).ready(function () {
 <pre class="r"><code>load(file = &quot;../data/input.data.rds&quot;)
 dim(input.data)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDkxNDUgICAxNVxuIn0= -->
-<pre><code>[1] 9145   15</code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDkxNDQgICAxNVxuIn0= -->
+<pre><code>[1] 9144   15</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -233,22 +233,17 @@ getDoParName()</code></pre>
 <h2>Make training and test sets</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2V0LnNlZWQoMTIzKVxuaW5UcmFpbiA8LSBjcmVhdGVEYXRhUGFydGl0aW9uKHkgPSBpbnB1dC5kYXRhJFBFQVRfREVQVEgsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHAgPSAuNzUsICMgVGhlIHBlcmNlbnRhZ2Ugb2YgZGF0YSBpbiB0aGUgdHJhaW5pbmcgc2V0XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGlzdCA9IEZBTFNFKSAjIFRoZSBmb3JtYXQgb2YgdGhlIHJlc3VsdHNcbnRyYWluaW5nIDwtIGlucHV0LmRhdGFbaW5UcmFpbixdXG50ZXN0aW5nIDwtIGlucHV0LmRhdGFbLWluVHJhaW4sXVxubnJvdyh0cmFpbmluZyk7IG5yb3codGVzdGluZylcbmBgYCJ9 -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2V0LnNlZWQoMTIzKVxuaW5UcmFpbiA8LSBjcmVhdGVEYXRhUGFydGl0aW9uKHkgPSBpbnB1dC5kYXRhJFBFQVRfREVQVEgsIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHAgPSAuNzUsICMgVGhlIHBlcmNlbnRhZ2Ugb2YgZGF0YSBpbiB0aGUgdHJhaW5pbmcgc2V0XG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGlzdCA9IEZBTFNFKSAjIFRoZSBmb3JtYXQgb2YgdGhlIHJlc3VsdHNcbnRyYWluaW5nIDwtIGlucHV0LmRhdGFbaW5UcmFpbixdXG50ZXN0aW5nIDwtIGlucHV0LmRhdGFbLWluVHJhaW4sXVxuYGBgIn0= -->
 <pre class="r"><code>set.seed(123)
 inTrain &lt;- createDataPartition(y = input.data$PEAT_DEPTH, 
                                p = .75, # The percentage of data in the training set
                                list = FALSE) # The format of the results
 training &lt;- input.data[inTrain,]
-testing &lt;- input.data[-inTrain,]
-nrow(training); nrow(testing)</code></pre>
+testing &lt;- input.data[-inTrain,]</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDY4NjBcblsxXSAyMjg1XG4ifQ== -->
-<pre><code>[1] 6860
-[1] 2285</code></pre>
-<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Training data has 6860 records. Testing data has 2285 records.</p>
+<p>Training data has 6860 records. Testing data has 2284 records.</p>
 <div id="train-model" class="section level4">
 <h4>train model</h4>
 <p>Need the latest version of caret from github to avoid known bug.</p>
@@ -317,6 +312,20 @@ The final values used for the model were predFixed = 2 and minNode = 3.</code></
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmJpbmQoZ2V0VHJhaW5QZXJmKE1sbTJhKSwgZ2V0VHJhaW5QZXJmKE1yZjJhKSlcbmBgYCJ9 -->
+<pre class="r"><code>rbind(getTrainPerf(Mlm2a), getTrainPerf(Mrf2a))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6NCwibnJvdyI6Mn0sInJkZiI6Ikg0c0lBQUFBQUFBQUJndHlpVERpaXVCaVlHQmdZbUJtWm1KZ1lnWXlXWmlBQkNNREN3TW5pSzVnWUdBV0Jva0NNUjlJb1lQUFc2dHlhZE03RGg1NXg1NzRObXJBeE8wdkhJbVpwOW1oWUgrdnBlZTA5Mk11dUhvM2owd2w5VkEzQjRkNXV4YWNVbzhHaWdtQUxZUll3SlNUQzJXeEJ5WGxGMlVXbDZDNWdEVXZNVGUxR0txTEJTcklHVktVbUprWDVCdnNDaFhnaFFnVUY1WW1GcVdtUUFVNXdJSytqakJGYkxtcEpSbjVLV2dXY0JibGwrdkJMT0VGT3cwa0NhWlJYWktjazFnTWN3bE1rQ3Nsc1NSUkw2MElxQi9JKzRlbWhUMi9vQ1F6UHcrb2lRa1VpS3hvbWhtTDBBVDRTL05BTGtuUlRjNG96Y3ZXTlFGWkFIVU5JOVIxVUpmQjJTd1FLNW4rUTQxaWhYazJOUzg5TXk4VjV2YWN4S1RVSENpSEQraGpzSWYxQ29veTgwcGdQZ0dLRnV1VjVKY2t3dFJ4SmVmbndFVEFmbVA0QndES3dLNDVNZ0lBQUE9PSJ9 -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["TrainRMSE"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["TrainRsquared"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["TrainMAE"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["method"],"name":[4],"type":["chr"],"align":["left"]}],"data":[{"1":"57.85335","2":"0.2619850","3":"44.56571","4":"lm","_rn_":"1"},{"1":"48.86544","2":"0.4768402","3":"33.24007","4":"Rborist","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10],"total":[4]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 </div>
 </div>
 <div id="evaluate-models" class="section level2">
@@ -365,13 +374,136 @@ RF &lt; 2.2e-16        </code></pre>
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 </div>
-<div id="predict-test-data-from-model-and" class="section level2">
-<h2>predict test data from model and</h2>
+<div id="predict-test-data-from-model-and-evaluate" class="section level2">
+<h2>predict test data from model and evaluate</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG1fcHJlZCA8LSBwcmVkaWN0KE1sbTJhLCB0cmFpbmluZylcbmBgYCJ9 -->
+<pre class="r"><code>lm_pred &lt;- predict(Mlm2a, training)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5nXG4ifQ== -->
+<pre><code>prediction from a rank-deficient fit may be misleading</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmZfcHJlZCA8LSBwcmVkaWN0KE1yZjJhLCB0cmFpbmluZylcbmBgYCJ9 -->
+<pre class="r"><code>rf_pred &lt;- predict(Mrf2a, training)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Calculate deviation</p>
+<p><strong>RMSE</strong>: Root Mean Square Error. Standard deviation of the differences between predicted and observed values. Measures accuracy. Scale-dependent, so can’t compare different datasets. Sensitive to outliers. Smaller is better. Calculated by <code>sqrt(mean((pred - obs)^2</code></p>
+<p><strong>Rsquared</strong>: Coefficient of determination. The proportion of the variation in the observed variable that is predictable from the predicted variable. Not scale dependent. Closer to 1 is better. Calculated by <code>R^2 = 1-\frac{∑ (y_i - \hat{y}_i)^2}{∑ (y_i - \bar{y}_i)^2}</code></p>
+<p><strong>MAE</strong>: Mean Absolute Error. The average of the difference between the absolute predicted and observed values. Scale-dependent, so can’t compare different datasets. Sensitive to outliers. Smaller is better. Calculated by <code>mean(abs(pred - obs))</code></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucG9zdFJlc2FtcGxlKHByZWQgPSBsbV9wcmVkLCBvYnMgPSB0cmFpbmluZyRQRUFUX0RFUFRIKVxuYGBgIn0= -->
+<pre class="r"><code>postResample(pred = lm_pred, obs = training$PEAT_DEPTH)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgUk1TRSAgIFJzcXVhcmVkICAgICAgICBNQUUgXG41Ny41NTYwODI3ICAwLjI2NjIyNDMgNDQuMTg5MTU4NSBcbiJ9 -->
+<pre><code>      RMSE   Rsquared        MAE 
+57.5560827  0.2662243 44.1891585 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucG9zdFJlc2FtcGxlKHByZWQgPSByZl9wcmVkLCBvYnMgPSB0cmFpbmluZyRQRUFUX0RFUFRIKVxuYGBgIn0= -->
+<pre class="r"><code>postResample(pred = rf_pred, obs = training$PEAT_DEPTH)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgICAgUk1TRSAgIFJzcXVhcmVkICAgICAgICBNQUUgXG4yOC42MjU5Mjk3ICAwLjgyNzA1ODkgMTguMjUyNDE4MSBcbiJ9 -->
+<pre><code>      RMSE   Rsquared        MAE 
+28.6259297  0.8270589 18.2524181 </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+<div id="train-full-models" class="section level2">
+<h2>Train full models</h2>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTWxtMmEuZnVsbCA8LSB0cmFpbihQRUFUX0RFUFRIIH4gLiwgXG4gICAgICAgICAgICAgIGRhdGEgPSBpbnB1dC5kYXRhLCBcbiAgICAgICAgICAgICAgbWV0aG9kID0gXCJsbVwiKVxuYGBgIn0= -->
+<pre class="r"><code>Mlm2a.full &lt;- train(PEAT_DEPTH ~ ., 
+              data = input.data, 
+              method = &quot;lm&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoicHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5ncHJlZGljdGlvbiBmcm9tIGEgcmFuay1kZWZpY2llbnQgZml0IG1heSBiZSBtaXNsZWFkaW5nXG4ifQ== -->
+<pre><code>prediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleadingprediction from a rank-deficient fit may be misleading</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2F2ZShNbG0yYS5mdWxsLCBmaWxlID0gXCIuLi9kYXRhL21vZGVscy9NbG0yYS5mdWxsLnJkc1wiKVxuTWxtMmEuZnVsbFxuYGBgIn0= -->
+<pre class="r"><code>save(Mlm2a.full, file = &quot;../data/models/Mlm2a.full.rds&quot;)
+Mlm2a.full</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiTGluZWFyIFJlZ3Jlc3Npb24gXG5cbjkxNDQgc2FtcGxlc1xuICAxNCBwcmVkaWN0b3JcblxuTm8gcHJlLXByb2Nlc3NpbmdcblJlc2FtcGxpbmc6IEJvb3RzdHJhcHBlZCAoMjUgcmVwcykgXG5TdW1tYXJ5IG9mIHNhbXBsZSBzaXplczogOTE0NCwgOTE0NCwgOTE0NCwgOTE0NCwgOTE0NCwgOTE0NCwgLi4uIFxuUmVzYW1wbGluZyByZXN1bHRzOlxuXG4gIFJNU0UgICAgICBSc3F1YXJlZCAgIE1BRSAgICAgXG4gIDU3LjY1ODIzICAwLjI1OTAzMDUgIDQ0LjI1NTM3XG5cblR1bmluZyBwYXJhbWV0ZXIgJ2ludGVyY2VwdCcgd2FzIGhlbGQgY29uc3RhbnQgYXQgYSB2YWx1ZSBvZiBUUlVFXG4ifQ== -->
+<pre><code>Linear Regression 
+
+9144 samples
+  14 predictor
+
+No pre-processing
+Resampling: Bootstrapped (25 reps) 
+Summary of sample sizes: 9144, 9144, 9144, 9144, 9144, 9144, ... 
+Resampling results:
+
+  RMSE      Rsquared   MAE     
+  57.65823  0.2590305  44.25537
+
+Tuning parameter 'intercept' was held constant at a value of TRUE</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>train model</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTXJmMmEuZnVsbCA8LSB0cmFpbihQRUFUX0RFUFRIIH4gLiwgXG4gICAgICAgICAgICAgIGRhdGEgPSBpbnB1dC5kYXRhLCBcbiAgICAgICAgICAgICAgbWV0aG9kID0gXCJSYm9yaXN0XCIpXG5gYGAifQ== -->
+<pre class="r"><code>Mrf2a.full &lt;- train(PEAT_DEPTH ~ ., 
+              data = input.data, 
+              method = &quot;Rborist&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZyBpbiBkb1RyeUNhdGNoKHJldHVybihleHByKSwgbmFtZSwgcGFyZW50ZW52LCBoYW5kbGVyKSA6XG4gIHJlc3RhcnRpbmcgaW50ZXJydXB0ZWQgcHJvbWlzZSBldmFsdWF0aW9uXG4ifQ== -->
+<pre><code>Warning in doTryCatch(return(expr), name, parentenv, handler) :
+  restarting interrupted promise evaluation</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2F2ZShNcmYyYS5mdWxsLCBmaWxlID0gXCIuLi9kYXRhL21vZGVscy9NcmYyYS5mdWxsLnJkc1wiKVxuTXJmMmEuZnVsbFxuYGBgIn0= -->
+<pre class="r"><code>save(Mrf2a.full, file = &quot;../data/models/Mrf2a.full.rds&quot;)
+Mrf2a.full</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiUmFuZG9tIEZvcmVzdCBcblxuOTE0NCBzYW1wbGVzXG4gIDE0IHByZWRpY3RvclxuXG5ObyBwcmUtcHJvY2Vzc2luZ1xuUmVzYW1wbGluZzogQm9vdHN0cmFwcGVkICgyNSByZXBzKSBcblN1bW1hcnkgb2Ygc2FtcGxlIHNpemVzOiA5MTQ0LCA5MTQ0LCA5MTQ0LCA5MTQ0LCA5MTQ0LCA5MTQ0LCAuLi4gXG5SZXNhbXBsaW5nIHJlc3VsdHMgYWNyb3NzIHR1bmluZyBwYXJhbWV0ZXJzOlxuXG4gIHByZWRGaXhlZCAgUk1TRSAgICAgIFJzcXVhcmVkICAgTUFFICAgICBcbiAgIDIgICAgICAgICA0Ni45MDc2OSAgMC41MTE2NjAyICAzMS42OTE0NFxuICAgOCAgICAgICAgIDQ2Ljk4NTY5ICAwLjUxMTQ1OTcgIDMxLjU5MDU0XG4gIDE0ICAgICAgICAgNDcuNDM5MjcgIDAuNTAzNDQwMCAgMzEuODAzNzNcblxuVHVuaW5nIHBhcmFtZXRlciAnbWluTm9kZScgd2FzIGhlbGQgY29uc3RhbnQgYXQgYSB2YWx1ZSBvZiAzXG5STVNFIHdhcyB1c2VkIHRvIHNlbGVjdCB0aGUgb3B0aW1hbCBtb2RlbCB1c2luZyB0aGUgc21hbGxlc3QgdmFsdWUuXG5UaGUgZmluYWwgdmFsdWVzIHVzZWQgZm9yIHRoZSBtb2RlbCB3ZXJlIHByZWRGaXhlZCA9IDIgYW5kIG1pbk5vZGUgPSAzLlxuIn0= -->
+<pre><code>Random Forest 
+
+9144 samples
+  14 predictor
+
+No pre-processing
+Resampling: Bootstrapped (25 reps) 
+Summary of sample sizes: 9144, 9144, 9144, 9144, 9144, 9144, ... 
+Resampling results across tuning parameters:
+
+  predFixed  RMSE      Rsquared   MAE     
+   2         46.90769  0.5116602  31.69144
+   8         46.98569  0.5114597  31.59054
+  14         47.43927  0.5034400  31.80373
+
+Tuning parameter 'minNode' was held constant at a value of 3
+RMSE was used to select the optimal model using the smallest value.
+The final values used for the model were predFixed = 2 and minNode = 3.</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>evaluate</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmJpbmQoZ2V0VHJhaW5QZXJmKE1sbTJhLmZ1bGwpLCBnZXRUcmFpblBlcmYoTXJmMmEuZnVsbCkpXG5gYGAifQ== -->
+<pre class="r"><code>rbind(getTrainPerf(Mlm2a.full), getTrainPerf(Mrf2a.full))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbImRhdGEuZnJhbWUiXSwibmNvbCI6NCwibnJvdyI6Mn0sInJkZiI6Ikg0c0lBQUFBQUFBQUJndHlpVERpaXVCaVlHQmdZbUJtWm1KZ1lnWXlXWmlBQkNNREN3TW5pSzVnWUdBV0Jva0NNUjlJb1lQUEZVZE9NYWNMRHU0bCtzS2x2T0V3Y2ZzTGs3OXNFbDZjYlA4Z3Z0WDBqRVEzWEwyYndnYXhyWEk2RHZZYm1UaGFUcHdFaWdtQUxZUll3SlNUQzJXeEJ5WGxGMlVXbDZDNWdEVXZNVGUxR0txTEJTcklHVktVbUprWDVCdnNDaFhnaFFnVUY1WW1GcVdtUUFVNXdJSytqakJGYkxtcEpSbjVLV2dXY0JibGwrdkJMT0VGT3cwa0NhWlJYWktjazFnTWN3bE1rQ3Nsc1NSUkw2MElxQi9JKzRlbWhUMi9vQ1F6UHcrb2lRa1VpS3hvbWhtTDBBVDRTL05BTGtuUlRjNG96Y3ZXTlFWWkFIVU5JOVIxVUpmQjJTd1FLNW4rUTQxaWhYazJOUzg5TXk4VjV2YWN4S1RVSENpSEQraGpzSWYxQ29veTgwcGdQZ0dLRnV1VjVKY2t3dFJ4SmVmbndFVEFmbVA0QndCMWdOOU9NZ0lBQUE9PSJ9 -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["TrainRMSE"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["TrainRsquared"],"name":[2],"type":["dbl"],"align":["right"]},{"label":["TrainMAE"],"name":[3],"type":["dbl"],"align":["right"]},{"label":["method"],"name":[4],"type":["chr"],"align":["left"]}],"data":[{"1":"57.65823","2":"0.2590305","3":"44.25537","4":"lm","_rn_":"1"},{"1":"46.90769","2":"0.5116602","3":"31.69144","4":"Rborist","_rn_":"2"}],"options":{"columns":{"min":{},"max":[10],"total":[4]},"rows":{"min":[10],"max":[10],"total":[2]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkVuZ2xhbmQgUGVhdCBEZXB0aCBNb2RlbDogVHJhaW4gbW9kZWxzIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KI1BlYXQgRGVwdGhzOiBydW4gbW9kZWxzDQoNCiMjIFBhY2thZ2VzIA0KYGBge3IsIGluY2x1ZGU9RkFMU0V9DQpsaWJyYXJ5KHJhc3RlcikNCmxpYnJhcnkocmdkYWwpDQoNCmxpYnJhcnkocmFuZG9tRm9yZXN0KQ0KbGlicmFyeShSYm9yaXN0KQ0KDQpsaWJyYXJ5KGNhcmV0KQ0KbGlicmFyeShwYXJhbGxlbCkNCmxpYnJhcnkoZG9QYXJhbGxlbCkNCmBgYA0KDQojIyBMb2FkIGRhdGENCmBgYHtyfQ0KbG9hZChmaWxlID0gIi4uL2RhdGEvaW5wdXQuZGF0YS5yZHMiKQ0KZGltKGlucHV0LmRhdGEpDQpgYGANCg0KDQojIyBTdGFydCBQYXJhbGxlbCBQcm9jZXNzaW5nDQpgYGB7cn0NCmRldGVjdENvcmVzKCkNCmdldERvUGFyV29ya2VycygpDQpjbCA8LSBtYWtlQ2x1c3RlcihkZXRlY3RDb3JlcygpLTEpDQpyZWdpc3RlckRvUGFyYWxsZWwoY2wpDQpnZXREb1Bhck5hbWUoKQ0KZ2V0RG9QYXJXb3JrZXJzKCkNCiNyZWdpc3RlckRvU0VRKCkgIyB0byBzdG9wIHBhcmFsbGVsIHByb2Nlc3NpbmcNCmBgYA0KDQoNCiMjIE1ha2UgdHJhaW5pbmcgYW5kIHRlc3Qgc2V0cw0KDQpgYGB7cn0NCnNldC5zZWVkKDEyMykNCmluVHJhaW4gPC0gY3JlYXRlRGF0YVBhcnRpdGlvbih5ID0gaW5wdXQuZGF0YSRQRUFUX0RFUFRILCANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBwID0gLjc1LCAjIFRoZSBwZXJjZW50YWdlIG9mIGRhdGEgaW4gdGhlIHRyYWluaW5nIHNldA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGxpc3QgPSBGQUxTRSkgIyBUaGUgZm9ybWF0IG9mIHRoZSByZXN1bHRzDQoNCnRyYWluaW5nIDwtIGlucHV0LmRhdGFbaW5UcmFpbixdDQp0ZXN0aW5nIDwtIGlucHV0LmRhdGFbLWluVHJhaW4sXQ0KYGBgDQpUcmFpbmluZyBkYXRhIGhhcyBgciBucm93KHRyYWluaW5nKWAgcmVjb3Jkcy4gIFRlc3RpbmcgZGF0YSBoYXMgYHIgbnJvdyh0ZXN0aW5nKWAgcmVjb3Jkcy4gIA0KDQojIyMjIHRyYWluIG1vZGVsDQpOZWVkIHRoZSBsYXRlc3QgdmVyc2lvbiBvZiBjYXJldCBmcm9tIGdpdGh1YiB0byBhdm9pZCBrbm93biBidWcuDQoNCnNldCBtb2RlbCBwYXJhbWV0ZXJzDQpgYGB7cn0NCnBhcmFtcyA8LSB0cmFpbkNvbnRyb2wobWV0aG9kID0gImN2IiwgbnVtYmVyID0gMTApDQpgYGANCg0KdHJhaW4gbGluZWFyIG1vZGVsDQpgYGB7cn0NCk1sbTJhIDwtIHRyYWluKFBFQVRfREVQVEggfiAuLCANCiAgICAgICAgICAgICAgZGF0YSA9IHRyYWluaW5nLCANCiAgICAgICAgICAgICAgbWV0aG9kID0gImxtIikNCg0Kc2F2ZShNbG0yYSwgZmlsZSA9ICIuLi9kYXRhL21vZGVscy9NbG0yYS5yZHMiKQ0KDQpNbG0yYQ0KYGBgDQoNCnRyYWluIG1vZGVsDQpgYGB7cn0NCk1yZjJhIDwtIHRyYWluKFBFQVRfREVQVEggfiAuLCANCiAgICAgICAgICAgICAgZGF0YSA9IHRyYWluaW5nLCANCiAgICAgICAgICAgICAgbWV0aG9kID0gIlJib3Jpc3QiKQ0KDQpzYXZlKE1yZjJhLCBmaWxlID0gIi4uL2RhdGEvbW9kZWxzL01yZjJhLnJkcyIpDQoNCk1yZjJhDQpgYGANCg0KIyMgRXZhbHVhdGUgbW9kZWxzDQoNCg0KcmVzaWR1YWxzPz8/Pw0KYGBge3J9DQpwZCA8LSBkYXRhLmZyYW1lKHJlc2lkdWFscyhNbG0yYSkpDQpuYW1lcyhwZCkgPC0gInJlc2lkLk1sbTJhIg0KYnJrcyA8LSBxdWFudGlsZShwZCRyZXNpZC5NbG0yYSwgbmEucm09VFJVRSkNCg0KaGlzdChwZCRyZXNpZC5NbG0yYSkNCmBgYA0KDQoNCg0KYGBge3J9DQpjdlZhbHVlcyA8LSByZXNhbXBsZXMobGlzdChMTSA9IE1sbTJhLCBSRiA9IE1yZjJhKSkNCnN1bW1hcnkoY3ZWYWx1ZXMpDQpzcGxvbShjdlZhbHVlcywgbWV0cmljID0gIlJzcXVhcmVkIikNCnBhcmFsbGVscGxvdChjdlZhbHVlcywgbWV0cmljID0gIlJzcXVhcmVkIikNCmRvdHBsb3QoY3ZWYWx1ZXMsIG1ldHJpYyA9ICJSc3F1YXJlZCIpDQpgYGANCg0KYGBge3J9DQpEaWZmcyA8LSBkaWZmKGN2VmFsdWVzLCBtZXRyaWMgPSAiUnNxdWFyZWQiKQ0Kc3VtbWFyeShEaWZmcykNCmRvdHBsb3QoRGlmZnMsIG1ldHJpYyA9ICJSc3F1YXJlZCIpDQpgYGANCg0KIyMgcHJlZGljdCB0ZXN0IGRhdGEgZnJvbSBtb2RlbCBhbmQgDQo=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkVuZ2xhbmQgUGVhdCBEZXB0aCBNb2RlbDogVHJhaW4gbW9kZWxzIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KI1BlYXQgRGVwdGhzOiBydW4gbW9kZWxzDQoNCiMjIFBhY2thZ2VzIA0KYGBge3IsIGluY2x1ZGU9RkFMU0V9DQpsaWJyYXJ5KHJhc3RlcikNCmxpYnJhcnkocmdkYWwpDQoNCmxpYnJhcnkocmFuZG9tRm9yZXN0KQ0KbGlicmFyeShSYm9yaXN0KQ0KDQpsaWJyYXJ5KGNhcmV0KQ0KbGlicmFyeShwYXJhbGxlbCkNCmxpYnJhcnkoZG9QYXJhbGxlbCkNCmBgYA0KDQojIyBMb2FkIGRhdGENCmBgYHtyfQ0KbG9hZChmaWxlID0gIi4uL2RhdGEvaW5wdXQuZGF0YS5yZHMiKQ0KZGltKGlucHV0LmRhdGEpDQpgYGANCg0KDQojIyBTdGFydCBQYXJhbGxlbCBQcm9jZXNzaW5nDQpgYGB7cn0NCmRldGVjdENvcmVzKCkNCmdldERvUGFyV29ya2VycygpDQpjbCA8LSBtYWtlQ2x1c3RlcihkZXRlY3RDb3JlcygpLTEpDQpyZWdpc3RlckRvUGFyYWxsZWwoY2wpDQpnZXREb1Bhck5hbWUoKQ0KZ2V0RG9QYXJXb3JrZXJzKCkNCiNyZWdpc3RlckRvU0VRKCkgIyB0byBzdG9wIHBhcmFsbGVsIHByb2Nlc3NpbmcNCmBgYA0KDQoNCiMjIE1ha2UgdHJhaW5pbmcgYW5kIHRlc3Qgc2V0cw0KDQpgYGB7cn0NCnNldC5zZWVkKDEyMykNCmluVHJhaW4gPC0gY3JlYXRlRGF0YVBhcnRpdGlvbih5ID0gaW5wdXQuZGF0YSRQRUFUX0RFUFRILCANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBwID0gLjc1LCAjIFRoZSBwZXJjZW50YWdlIG9mIGRhdGEgaW4gdGhlIHRyYWluaW5nIHNldA0KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGxpc3QgPSBGQUxTRSkgIyBUaGUgZm9ybWF0IG9mIHRoZSByZXN1bHRzDQoNCnRyYWluaW5nIDwtIGlucHV0LmRhdGFbaW5UcmFpbixdDQp0ZXN0aW5nIDwtIGlucHV0LmRhdGFbLWluVHJhaW4sXQ0KYGBgDQpUcmFpbmluZyBkYXRhIGhhcyBgciBucm93KHRyYWluaW5nKWAgcmVjb3Jkcy4gIFRlc3RpbmcgZGF0YSBoYXMgYHIgbnJvdyh0ZXN0aW5nKWAgcmVjb3Jkcy4gIA0KDQojIyMjIHRyYWluIG1vZGVsDQpOZWVkIHRoZSBsYXRlc3QgdmVyc2lvbiBvZiBjYXJldCBmcm9tIGdpdGh1YiB0byBhdm9pZCBrbm93biBidWcuDQoNCnNldCBtb2RlbCBwYXJhbWV0ZXJzDQpgYGB7cn0NCnBhcmFtcyA8LSB0cmFpbkNvbnRyb2wobWV0aG9kID0gImN2IiwgbnVtYmVyID0gMTApDQpgYGANCg0KdHJhaW4gbGluZWFyIG1vZGVsDQpgYGB7cn0NCk1sbTJhIDwtIHRyYWluKFBFQVRfREVQVEggfiAuLCANCiAgICAgICAgICAgICAgZGF0YSA9IHRyYWluaW5nLCANCiAgICAgICAgICAgICAgbWV0aG9kID0gImxtIikNCg0Kc2F2ZShNbG0yYSwgZmlsZSA9ICIuLi9kYXRhL21vZGVscy9NbG0yYS5yZHMiKQ0KDQpNbG0yYQ0KYGBgDQoNCnRyYWluIG1vZGVsDQpgYGB7cn0NCk1yZjJhIDwtIHRyYWluKFBFQVRfREVQVEggfiAuLCANCiAgICAgICAgICAgICAgZGF0YSA9IHRyYWluaW5nLCANCiAgICAgICAgICAgICAgbWV0aG9kID0gIlJib3Jpc3QiKQ0KDQpzYXZlKE1yZjJhLCBmaWxlID0gIi4uL2RhdGEvbW9kZWxzL01yZjJhLnJkcyIpDQoNCk1yZjJhDQpgYGANCg0KDQpgYGB7cn0NCnJiaW5kKGdldFRyYWluUGVyZihNbG0yYSksIGdldFRyYWluUGVyZihNcmYyYSkpDQpgYGANCg0KDQojIyBFdmFsdWF0ZSBtb2RlbHMNCg0KDQpyZXNpZHVhbHM/Pz8/DQpgYGB7cn0NCnBkIDwtIGRhdGEuZnJhbWUocmVzaWR1YWxzKE1sbTJhKSkNCm5hbWVzKHBkKSA8LSAicmVzaWQuTWxtMmEiDQpicmtzIDwtIHF1YW50aWxlKHBkJHJlc2lkLk1sbTJhLCBuYS5ybT1UUlVFKQ0KDQpoaXN0KHBkJHJlc2lkLk1sbTJhKQ0KYGBgDQoNCg0KDQpgYGB7cn0NCmN2VmFsdWVzIDwtIHJlc2FtcGxlcyhsaXN0KExNID0gTWxtMmEsIFJGID0gTXJmMmEpKQ0Kc3VtbWFyeShjdlZhbHVlcykNCnNwbG9tKGN2VmFsdWVzLCBtZXRyaWMgPSAiUnNxdWFyZWQiKQ0KcGFyYWxsZWxwbG90KGN2VmFsdWVzLCBtZXRyaWMgPSAiUnNxdWFyZWQiKQ0KZG90cGxvdChjdlZhbHVlcywgbWV0cmljID0gIlJzcXVhcmVkIikNCmBgYA0KDQpgYGB7cn0NCkRpZmZzIDwtIGRpZmYoY3ZWYWx1ZXMsIG1ldHJpYyA9ICJSc3F1YXJlZCIpDQpzdW1tYXJ5KERpZmZzKQ0KZG90cGxvdChEaWZmcywgbWV0cmljID0gIlJzcXVhcmVkIikNCmBgYA0KDQojIyBwcmVkaWN0IHRlc3QgZGF0YSBmcm9tIG1vZGVsIGFuZCBldmFsdWF0ZQ0KDQpgYGB7cn0NCmxtX3ByZWQgPC0gcHJlZGljdChNbG0yYSwgdHJhaW5pbmcpDQoNCnJmX3ByZWQgPC0gcHJlZGljdChNcmYyYSwgdHJhaW5pbmcpDQpgYGANCg0KQ2FsY3VsYXRlIGRldmlhdGlvbg0KDQoqKlJNU0UqKjogUm9vdCBNZWFuIFNxdWFyZSBFcnJvci4gU3RhbmRhcmQgZGV2aWF0aW9uIG9mIHRoZSBkaWZmZXJlbmNlcyBiZXR3ZWVuIHByZWRpY3RlZCBhbmQgb2JzZXJ2ZWQgdmFsdWVzLiAgTWVhc3VyZXMgYWNjdXJhY3kuICBTY2FsZS1kZXBlbmRlbnQsIHNvIGNhbid0IGNvbXBhcmUgZGlmZmVyZW50IGRhdGFzZXRzLiAgU2Vuc2l0aXZlIHRvIG91dGxpZXJzLiBTbWFsbGVyIGlzIGJldHRlci4gIENhbGN1bGF0ZWQgYnkgICBgc3FydChtZWFuKChwcmVkIC0gb2JzKV4yYCANCg0KKipSc3F1YXJlZCoqOiBDb2VmZmljaWVudCBvZiBkZXRlcm1pbmF0aW9uLiAgVGhlIHByb3BvcnRpb24gb2YgdGhlIHZhcmlhdGlvbiBpbiB0aGUgb2JzZXJ2ZWQgdmFyaWFibGUgdGhhdCBpcyBwcmVkaWN0YWJsZSBmcm9tIHRoZSBwcmVkaWN0ZWQgdmFyaWFibGUuICBOb3Qgc2NhbGUgZGVwZW5kZW50LiAgQ2xvc2VyIHRvIDEgaXMgYmV0dGVyLiBDYWxjdWxhdGVkIGJ5IGBSXjIgPSAxLVxmcmFje+KIkSAoeV9pIC0gXGhhdHt5fV9pKV4yfXviiJEgKHlfaSAtIFxiYXJ7eX1faSleMn1gDQoNCioqTUFFKio6IE1lYW4gQWJzb2x1dGUgRXJyb3IuICBUaGUgYXZlcmFnZSBvZiB0aGUgZGlmZmVyZW5jZSBiZXR3ZWVuIHRoZSBhYnNvbHV0ZSBwcmVkaWN0ZWQgYW5kIG9ic2VydmVkIHZhbHVlcy4gIFNjYWxlLWRlcGVuZGVudCwgc28gY2FuJ3QgY29tcGFyZSBkaWZmZXJlbnQgZGF0YXNldHMuICBTZW5zaXRpdmUgdG8gb3V0bGllcnMuIFNtYWxsZXIgaXMgYmV0dGVyLiAgQ2FsY3VsYXRlZCBieSBgbWVhbihhYnMocHJlZCAtIG9icykpYA0KDQoNCmBgYHtyfQ0KcG9zdFJlc2FtcGxlKHByZWQgPSBsbV9wcmVkLCBvYnMgPSB0cmFpbmluZyRQRUFUX0RFUFRIKQ0KcG9zdFJlc2FtcGxlKHByZWQgPSByZl9wcmVkLCBvYnMgPSB0cmFpbmluZyRQRUFUX0RFUFRIKQ0KYGBgDQoNCiMjIFRyYWluIGZ1bGwgbW9kZWxzDQoNCmBgYHtyfQ0KTWxtMmEuZnVsbCA8LSB0cmFpbihQRUFUX0RFUFRIIH4gLiwgDQogICAgICAgICAgICAgIGRhdGEgPSBpbnB1dC5kYXRhLCANCiAgICAgICAgICAgICAgbWV0aG9kID0gImxtIikNCg0Kc2F2ZShNbG0yYS5mdWxsLCBmaWxlID0gIi4uL2RhdGEvbW9kZWxzL01sbTJhLmZ1bGwucmRzIikNCg0KTWxtMmEuZnVsbA0KYGBgDQoNCnRyYWluIG1vZGVsDQpgYGB7cn0NCk1yZjJhLmZ1bGwgPC0gdHJhaW4oUEVBVF9ERVBUSCB+IC4sIA0KICAgICAgICAgICAgICBkYXRhID0gaW5wdXQuZGF0YSwgDQogICAgICAgICAgICAgIG1ldGhvZCA9ICJSYm9yaXN0IikNCg0Kc2F2ZShNcmYyYS5mdWxsLCBmaWxlID0gIi4uL2RhdGEvbW9kZWxzL01yZjJhLmZ1bGwucmRzIikNCg0KTXJmMmEuZnVsbA0KYGBgDQoNCmV2YWx1YXRlDQpgYGB7cn0NCnJiaW5kKGdldFRyYWluUGVyZihNbG0yYS5mdWxsKSwgZ2V0VHJhaW5QZXJmKE1yZjJhLmZ1bGwpKQ0KYGBgDQoNCg==</div>
 
 
 

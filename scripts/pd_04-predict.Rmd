@@ -44,8 +44,9 @@ predictors <- stack(elev, aspect, slope, outflow, inflow, gdd, gsl, rain_ann, ra
                     raindays_10mm, raindays_1mm, temp_mean, temp_min, temp_max)
 
 names(predictors) <-names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow",
-                                           "gdd", "gsl", "rain_ann", "rain_daily", "raindays_10mm",
-                                           "raindays_1mm", "temp_mean", "temp_min", "temp_max")
+                                           "gdd", "gsl", "rain_ann", "rain_daily", 
+                                           "raindays_10mm", "raindays_1mm", "temp_mean", 
+                                           "temp_min", "temp_max")
 ```
 
 or do the following: 
@@ -60,6 +61,11 @@ if necessary crop to prediction extent
 # 
 # predictors <- raster::crop(x = predictors, y = boundbox)
 ```
+
+```{r}
+plot(elev)
+```
+
 
 ## Predict outputs from predictors
 
@@ -76,14 +82,14 @@ if necessary crop to prediction extent
 # Predict a number of models
 
 ```{r}
-output <- raster::predict(predictors, Mlm2a, type="raw", progress="text",
+output <- raster::predict(predictors, Mlm2a.full, type="raw", progress="text",
                           response = "vote", index = 2)
-writeRaster(x = output, filename = "../outputs/pd_lm_mod2a.tif")
+writeRaster(x = output, filename = "../outputs/pd_lm_mod2b.tif")
 plot(output)
 
-output <- raster::predict(predictors, Mrf2a, type="raw", progress="text",
+output <- raster::predict(predictors, Mrf2a.full, type="raw", progress="text",
                           response = "vote", index = 2)
-writeRaster(x = output, filename = "../outputs/pd_rf_mod2a.tif")
+writeRaster(x = output, filename = "../outputs/pd_rf_mod2b.tif")
 plot(output)
 ```
 

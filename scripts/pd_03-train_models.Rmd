@@ -80,6 +80,12 @@ save(Mrf2a, file = "../data/models/Mrf2a.rds")
 Mrf2a
 ```
 
+
+```{r}
+rbind(getTrainPerf(Mlm2a), getTrainPerf(Mrf2a))
+```
+
+
 ## Evaluate models
 
 
@@ -108,4 +114,53 @@ summary(Diffs)
 dotplot(Diffs, metric = "Rsquared")
 ```
 
-## predict test data from model and 
+## predict test data from model and evaluate
+
+```{r}
+lm_pred <- predict(Mlm2a, training)
+
+rf_pred <- predict(Mrf2a, training)
+```
+
+Calculate deviation
+
+**RMSE**: Root Mean Square Error. Standard deviation of the differences between predicted and observed values.  Measures accuracy.  Scale-dependent, so can't compare different datasets.  Sensitive to outliers. Smaller is better.  Calculated by   `sqrt(mean((pred - obs)^2` 
+
+**Rsquared**: Coefficient of determination.  The proportion of the variation in the observed variable that is predictable from the predicted variable.  Not scale dependent.  Closer to 1 is better. Calculated by `R^2 = 1-\frac{∑ (y_i - \hat{y}_i)^2}{∑ (y_i - \bar{y}_i)^2}`
+
+**MAE**: Mean Absolute Error.  The average of the difference between the absolute predicted and observed values.  Scale-dependent, so can't compare different datasets.  Sensitive to outliers. Smaller is better.  Calculated by `mean(abs(pred - obs))`
+
+
+```{r}
+postResample(pred = lm_pred, obs = training$PEAT_DEPTH)
+postResample(pred = rf_pred, obs = training$PEAT_DEPTH)
+```
+
+## Train full models
+
+```{r}
+Mlm2a.full <- train(PEAT_DEPTH ~ ., 
+              data = input.data, 
+              method = "lm")
+
+save(Mlm2a.full, file = "../data/models/Mlm2a.full.rds")
+
+Mlm2a.full
+```
+
+train model
+```{r}
+Mrf2a.full <- train(PEAT_DEPTH ~ ., 
+              data = input.data, 
+              method = "Rborist")
+
+save(Mrf2a.full, file = "../data/models/Mrf2a.full.rds")
+
+Mrf2a.full
+```
+
+evaluate
+```{r}
+rbind(getTrainPerf(Mlm2a.full), getTrainPerf(Mrf2a.full))
+```
+
