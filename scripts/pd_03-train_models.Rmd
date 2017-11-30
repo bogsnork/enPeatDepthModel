@@ -69,7 +69,7 @@ save(Mlm2a, file = "../data/models/Mlm2a.rds")
 Mlm2a
 ```
 
-train model
+train random forest model
 ```{r}
 Mrf2a <- train(PEAT_DEPTH ~ ., 
               data = training, 
@@ -85,23 +85,74 @@ Mrf2a
 rbind(getTrainPerf(Mlm2a), getTrainPerf(Mrf2a))
 ```
 
-
-## Evaluate models
-
-
-residuals????
+train generalised linear model
 ```{r}
-pd <- data.frame(residuals(Mlm2a))
-names(pd) <- "resid.Mlm2a"
-brks <- quantile(pd$resid.Mlm2a, na.rm=TRUE)
+Mglm2a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "glm")
 
-hist(pd$resid.Mlm2a)
+save(Mglm2a, file = "../data/models/Mglm2a.rds")
+
+Mglm2a
+```
+
+train boosted generalised linear model
+```{r}
+Mbglm2a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "glmboost")
+
+save(Mbglm2a, file = "../data/models/Mbglm2a.rds")
+
+Mbglm2a
+```
+
+train k nearest neighbours model
+
+```{r}
+Mknn2a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "knn")
+
+save(Mknn2a, file = "../data/models/Mknn2a.rds")
+
+Mknn2a
+```
+
+
+train Generalised Additive Model 
+
+```{r}
+Mgam2a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "gam")
+
+save(Mgam2a, file = "../data/models/Mgam2a.rds")
+
+Mgam2a
+```
+
+train Gradient Boosting Model 
+
+```{r}
+Mgbm2a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "gbm")
+
+save(Mgbm2a, file = "../data/models/Mgbm2a.rds")
+
+Mgbm2a
 ```
 
 
 
+## Evaluate models
+
+
+
 ```{r}
-cvValues <- resamples(list(LM = Mlm2a, RF = Mrf2a))
+cvValues <- resamples(list(LM = Mlm2a, RF = Mrf2a, GLM = Mglm2a, GLMB = Mbglm2a, 
+                           GAM = Mgam2a, GBM = Mgbm2a))
 summary(cvValues)
 splom(cvValues, metric = "Rsquared")
 parallelplot(cvValues, metric = "Rsquared")
@@ -120,6 +171,15 @@ dotplot(Diffs, metric = "Rsquared")
 lm_pred <- predict(Mlm2a, training)
 
 rf_pred <- predict(Mrf2a, training)
+
+glm_pred <- predict(Mglm2a, training)
+
+glmb_pred <- predict(Mbglm2a, training) 
+
+gam_pred <- predict(Mgam2a, training)
+
+gbm_pred <- predict(Mgbm2a, training)
+
 ```
 
 Calculate deviation
@@ -132,8 +192,17 @@ Calculate deviation
 
 
 ```{r}
-postResample(pred = lm_pred, obs = training$PEAT_DEPTH)
-postResample(pred = rf_pred, obs = training$PEAT_DEPTH)
+mod_variance <- data.frame(rbind(
+  postResample(pred = lm_pred, obs = training$PEAT_DEPTH),
+  postResample(pred = rf_pred, obs = training$PEAT_DEPTH),
+  postResample(pred = glm_pred, obs = training$PEAT_DEPTH),
+  postResample(pred = glmb_pred, obs = training$PEAT_DEPTH),
+  postResample(pred = gam_pred, obs = training$PEAT_DEPTH),
+  postResample(pred = gbm_pred, obs = training$PEAT_DEPTH)
+))
+
+mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", "gam", "gbm"), mod_variance)
+mod_variance
 ```
 
 ## Train full models
