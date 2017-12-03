@@ -27,58 +27,8 @@ load(file = "../data/input.data.rds")
 ```
 
 
-## Start Parallel Processing
 ```{r}
-detectCores()
-getDoParWorkers()
-cl <- makeCluster(detectCores()-1)
-registerDoParallel(cl)
-getDoParName()
-getDoParWorkers()
-#registerDoSEQ() # to stop parallel processing
+resamples(list(c5.0=fit.c50, gbm=fit.gbm))
 ```
 
-
-## Make training and test sets
-split into three parts: `ensembleData`, `blenderData`, `testingData`.
-
-```{r}
-set.seed(1234)
-input.data <- input.data[sample(nrow(input.data)),]
-split <- floor(nrow(input.data)/3)
-ensembleData <- input.data[0:split,]
-blenderData <- input.data[(split+1):(split*2),]
-testingData <- input.data[(split*2+1):nrow(input.data),]
-```
-
-
-```{r}
-labelName <- 'PEAT_DEPTH'
-predictors <- names(ensembleData)[names(ensembleData) != labelName]
-```
-
-control the number of cross-validations performed (the more the better):
-
-```{r}
-myControl <- trainControl(method='cv', number=3, returnResamp='none')
-```
-
-
-## Benchmark model
-
-create a benchmark model to compare others against.  Using `gbm` Generalized Boosted Regression Model
-```{r}
-test_model <- train(blenderData[,predictors], blenderData[,labelName], method='gbm', trControl=myControl)
-```
-
-
-train and evaluate benchmark model
-```{r}
-preds <- predict(object=test_model, testingData[,predictors])
-auc <- roc(testingData[,labelName], preds) #area under curve
-print(auc$auc)
-auc.multi <- multiclass.roc(testingData[,labelName], preds)
-```
-
-## Create emsembles
 

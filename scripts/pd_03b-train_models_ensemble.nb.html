@@ -188,131 +188,17 @@ $(document).ready(function () {
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-</div>
-<div id="start-parallel-processing" class="section level2">
-<h2>Start Parallel Processing</h2>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGV0ZWN0Q29yZXMoKVxuYGBgIn0= -->
-<pre class="r"><code>detectCores()</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDRcbiJ9 -->
-<pre><code>[1] 4</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2V0RG9QYXJXb3JrZXJzKClcbmBgYCJ9 -->
-<pre class="r"><code>getDoParWorkers()</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDFcbiJ9 -->
-<pre><code>[1] 1</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY2wgPC0gbWFrZUNsdXN0ZXIoZGV0ZWN0Q29yZXMoKS0xKVxucmVnaXN0ZXJEb1BhcmFsbGVsKGNsKVxuZ2V0RG9QYXJOYW1lKClcbmBgYCJ9 -->
-<pre class="r"><code>cl &lt;- makeCluster(detectCores()-1)
-registerDoParallel(cl)
-getDoParName()</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiZG9QYXJhbGxlbFNOT1dcIlxuIn0= -->
-<pre><code>[1] &quot;doParallelSNOW&quot;</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2V0RG9QYXJXb3JrZXJzKClcbmBgYCJ9 -->
-<pre class="r"><code>getDoParWorkers()</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDNcbiJ9 -->
-<pre><code>[1] 3</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI3JlZ2lzdGVyRG9TRVEoKSAjIHRvIHN0b3AgcGFyYWxsZWwgcHJvY2Vzc2luZ1xuYGBgIn0= -->
-<pre class="r"><code>#registerDoSEQ() # to stop parallel processing</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucmVzYW1wbGVzKGxpc3QoYzUuMD1maXQuYzUwLCBnYm09Zml0LmdibSkpXG5gYGAifQ== -->
+<pre class="r"><code>resamples(list(c5.0=fit.c50, gbm=fit.gbm))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-</div>
-<div id="make-training-and-test-sets" class="section level2">
-<h2>Make training and test sets</h2>
-<p>split into three parts: <code>ensembleData</code>, <code>blenderData</code>, <code>testingData</code>.</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc2V0LnNlZWQoMTIzNClcbmlucHV0LmRhdGEgPC0gaW5wdXQuZGF0YVtzYW1wbGUobnJvdyhpbnB1dC5kYXRhKSksXVxuc3BsaXQgPC0gZmxvb3IobnJvdyhpbnB1dC5kYXRhKS8zKVxuZW5zZW1ibGVEYXRhIDwtIGlucHV0LmRhdGFbMDpzcGxpdCxdXG5ibGVuZGVyRGF0YSA8LSBpbnB1dC5kYXRhWyhzcGxpdCsxKTooc3BsaXQqMiksXVxudGVzdGluZ0RhdGEgPC0gaW5wdXQuZGF0YVsoc3BsaXQqMisxKTpucm93KGlucHV0LmRhdGEpLF1cbmBgYCJ9 -->
-<pre class="r"><code>set.seed(1234)
-input.data &lt;- input.data[sample(nrow(input.data)),]
-split &lt;- floor(nrow(input.data)/3)
-ensembleData &lt;- input.data[0:split,]
-blenderData &lt;- input.data[(split+1):(split*2),]
-testingData &lt;- input.data[(split*2+1):nrow(input.data),]</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGFiZWxOYW1lIDwtICdQRUFUX0RFUFRIJ1xucHJlZGljdG9ycyA8LSBuYW1lcyhlbnNlbWJsZURhdGEpW25hbWVzKGVuc2VtYmxlRGF0YSkgIT0gbGFiZWxOYW1lXVxuYGBgIn0= -->
-<pre class="r"><code>labelName &lt;- 'PEAT_DEPTH'
-predictors &lt;- names(ensembleData)[names(ensembleData) != labelName]</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>control the number of cross-validations performed (the more the better):</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubXlDb250cm9sIDwtIHRyYWluQ29udHJvbChtZXRob2Q9J2N2JywgbnVtYmVyPTMsIHJldHVyblJlc2FtcD0nbm9uZScpXG5gYGAifQ== -->
-<pre class="r"><code>myControl &lt;- trainControl(method='cv', number=3, returnResamp='none')</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="benchmark-model" class="section level2">
-<h2>Benchmark model</h2>
-<p>create a benchmark model to compare others against. Using <code>gbm</code> Generalized Boosted Regression Model</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdF9tb2RlbCA8LSB0cmFpbihibGVuZGVyRGF0YVsscHJlZGljdG9yc10sIGJsZW5kZXJEYXRhWyxsYWJlbE5hbWVdLCBtZXRob2Q9J2dibScsIHRyQ29udHJvbD1teUNvbnRyb2wpXG5gYGAifQ== -->
-<pre class="r"><code>test_model &lt;- train(blenderData[,predictors], blenderData[,labelName], method='gbm', trControl=myControl)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiSXRlciAgIFRyYWluRGV2aWFuY2UgICBWYWxpZERldmlhbmNlICAgU3RlcFNpemUgICBJbXByb3ZlXG4gICAgIDEgICAgIDQ0NDAuNDk1NSAgICAgICAgICAgICBuYW4gICAgIDAuMTAwMCAgMTIyLjc0MTVcbiAgICAgMiAgICAgNDM0NC45ODU5ICAgICAgICAgICAgIG5hbiAgICAgMC4xMDAwICAgODcuODIwNlxuICAgICAzICAgICA0MjU2LjQxODUgICAgICAgICAgICAgbmFuICAgICAwLjEwMDAgICA3Mi43MTEzXG4gICAgIDQgICAgIDQxNjUuNzk4NSAgICAgICAgICAgICBuYW4gICAgIDAuMTAwMCAgIDc5LjM3ODRcbiAgICAgNSAgICAgNDA5MC4zMDk0ICAgICAgICAgICAgIG5hbiAgICAgMC4xMDAwICAgNzIuNDg5M1xuICAgICA2ICAgICA0MDEwLjkzNTAgICAgICAgICAgICAgbmFuICAgICAwLjEwMDAgICA3My4yMzk4XG4gICAgIDcgICAgIDM5NDMuODc2MSAgICAgICAgICAgICBuYW4gICAgIDAuMTAwMCAgIDYwLjIyNDlcbiAgICAgOCAgICAgMzg3NC4zNzg2ICAgICAgICAgICAgIG5hbiAgICAgMC4xMDAwICAgNDcuOTQwNFxuICAgICA5ICAgICAzODE4LjY3MDUgICAgICAgICAgICAgbmFuICAgICAwLjEwMDAgICAzMS4zNjU0XG4gICAgMTAgICAgIDM3ODAuOTA4OSAgICAgICAgICAgICBuYW4gICAgIDAuMTAwMCAgIDI2LjkxNTBcbiAgICAyMCAgICAgMzQyMC43NzE2ICAgICAgICAgICAgIG5hbiAgICAgMC4xMDAwICAgMjQuNDc4MFxuICAgIDQwICAgICAzMDM3LjAzNzMgICAgICAgICAgICAgbmFuICAgICAwLjEwMDAgICAgNS44MDI5XG4gICAgNjAgICAgIDI4MzMuNjk3NCAgICAgICAgICAgICBuYW4gICAgIDAuMTAwMCAgICA4LjE1MjhcbiAgICA4MCAgICAgMjY3Ny43Mzg1ICAgICAgICAgICAgIG5hbiAgICAgMC4xMDAwICAgIDIuOTU4MVxuICAgMTAwICAgICAyNTc3Ljg1OTMgICAgICAgICAgICAgbmFuICAgICAwLjEwMDAgICAgMS41MTU3XG4gICAxMjAgICAgIDI0OTMuMTYyMiAgICAgICAgICAgICBuYW4gICAgIDAuMTAwMCAgICAxLjE2ODVcbiAgIDE0MCAgICAgMjQyNi4xODQ2ICAgICAgICAgICAgIG5hbiAgICAgMC4xMDAwICAgIDIuODIxNlxuICAgMTUwICAgICAyMzg5LjgwMjggICAgICAgICAgICAgbmFuICAgICAwLjEwMDAgICAtMi4wNTg2XG4ifQ== -->
-<pre><code>Iter   TrainDeviance   ValidDeviance   StepSize   Improve
-     1     4440.4955             nan     0.1000  122.7415
-     2     4344.9859             nan     0.1000   87.8206
-     3     4256.4185             nan     0.1000   72.7113
-     4     4165.7985             nan     0.1000   79.3784
-     5     4090.3094             nan     0.1000   72.4893
-     6     4010.9350             nan     0.1000   73.2398
-     7     3943.8761             nan     0.1000   60.2249
-     8     3874.3786             nan     0.1000   47.9404
-     9     3818.6705             nan     0.1000   31.3654
-    10     3780.9089             nan     0.1000   26.9150
-    20     3420.7716             nan     0.1000   24.4780
-    40     3037.0373             nan     0.1000    5.8029
-    60     2833.6974             nan     0.1000    8.1528
-    80     2677.7385             nan     0.1000    2.9581
-   100     2577.8593             nan     0.1000    1.5157
-   120     2493.1622             nan     0.1000    1.1685
-   140     2426.1846             nan     0.1000    2.8216
-   150     2389.8028             nan     0.1000   -2.0586</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-<p>train and evaluate benchmark model</p>
-<!-- rnb-text-end -->
-<!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHJlZHMgPC0gcHJlZGljdChvYmplY3Q9dGVzdF9tb2RlbCwgdGVzdGluZ0RhdGFbLHByZWRpY3RvcnNdKVxuYXVjIDwtIHJvYyh0ZXN0aW5nRGF0YVssbGFiZWxOYW1lXSwgcHJlZHMpICNhcmVhIHVuZGVyIGN1cnZlXG5gYGAifQ== -->
-<pre class="r"><code>preds &lt;- predict(object=test_model, testingData[,predictors])
-auc &lt;- roc(testingData[,labelName], preds) #area under curve</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiJ3Jlc3BvbnNlJyBoYXMgbW9yZSB0aGFuIHR3byBsZXZlbHMuIENvbnNpZGVyIHNldHRpbmcgJ2xldmVscycgZXhwbGljaXRseSBvciB1c2luZyAnbXVsdGljbGFzcy5yb2MnIGluc3RlYWRcbiJ9 -->
-<pre><code>'response' has more than two levels. Consider setting 'levels' explicitly or using 'multiclass.roc' instead</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHJpbnQoYXVjJGF1YylcbmBgYCJ9 -->
-<pre class="r"><code>print(auc$auc)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiQXJlYSB1bmRlciB0aGUgY3VydmU6IDAuOTE5N1xuIn0= -->
-<pre><code>Area under the curve: 0.9197</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-chunk-end -->
-<!-- rnb-text-begin -->
-</div>
-<div id="create-emsembles" class="section level2">
-<h2>Create emsembles</h2>
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkVuZ2xhbmQgUGVhdCBEZXB0aCBNb2RlbDogVHJhaW4gZW5zZW1ibGUgbW9kZWxzIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KQ291cnRlc3kgb2YgaHR0cHM6Ly9hbXVuYXRlZ3VpLmdpdGh1Yi5pby9ibGVuZGluZy1tb2RlbHMvDQoNCg0KTm90ZTogdGhpcyBuZWVkcyB0byBiZSBhYmFuZG9uZWQsIGJlY2F1c2UgdGhlIGV4YW1wbGUgaXMgYSBjbGFzc2lmaWNhdGlvbiBwcm9ibGVtIG5vdCBhIHJlZ3Jlc3Npb24gcHJvYmxlbS4gIA0KDQoNCiMjIFBhY2thZ2VzIA0KYGBge3IsIGluY2x1ZGU9RkFMU0V9DQpsaWJyYXJ5KHJhc3RlcikNCmxpYnJhcnkocmdkYWwpDQoNCmxpYnJhcnkoY2FyZXQpDQpsaWJyYXJ5KHBhcmFsbGVsKQ0KbGlicmFyeShkb1BhcmFsbGVsKQ0KDQpsaWJyYXJ5KHBST0MpDQpgYGANCg0KIyMgTG9hZCBkYXRhDQpgYGB7cn0NCmxvYWQoZmlsZSA9ICIuLi9kYXRhL2lucHV0LmRhdGEucmRzIikNCmBgYA0KDQoNCiMjIFN0YXJ0IFBhcmFsbGVsIFByb2Nlc3NpbmcNCmBgYHtyfQ0KZGV0ZWN0Q29yZXMoKQ0KZ2V0RG9QYXJXb3JrZXJzKCkNCmNsIDwtIG1ha2VDbHVzdGVyKGRldGVjdENvcmVzKCktMSkNCnJlZ2lzdGVyRG9QYXJhbGxlbChjbCkNCmdldERvUGFyTmFtZSgpDQpnZXREb1BhcldvcmtlcnMoKQ0KI3JlZ2lzdGVyRG9TRVEoKSAjIHRvIHN0b3AgcGFyYWxsZWwgcHJvY2Vzc2luZw0KYGBgDQoNCg0KIyMgTWFrZSB0cmFpbmluZyBhbmQgdGVzdCBzZXRzDQpzcGxpdCBpbnRvIHRocmVlIHBhcnRzOiBgZW5zZW1ibGVEYXRhYCwgYGJsZW5kZXJEYXRhYCwgYHRlc3RpbmdEYXRhYC4NCg0KYGBge3J9DQpzZXQuc2VlZCgxMjM0KQ0KaW5wdXQuZGF0YSA8LSBpbnB1dC5kYXRhW3NhbXBsZShucm93KGlucHV0LmRhdGEpKSxdDQpzcGxpdCA8LSBmbG9vcihucm93KGlucHV0LmRhdGEpLzMpDQplbnNlbWJsZURhdGEgPC0gaW5wdXQuZGF0YVswOnNwbGl0LF0NCmJsZW5kZXJEYXRhIDwtIGlucHV0LmRhdGFbKHNwbGl0KzEpOihzcGxpdCoyKSxdDQp0ZXN0aW5nRGF0YSA8LSBpbnB1dC5kYXRhWyhzcGxpdCoyKzEpOm5yb3coaW5wdXQuZGF0YSksXQ0KYGBgDQoNCg0KYGBge3J9DQpsYWJlbE5hbWUgPC0gJ1BFQVRfREVQVEgnDQpwcmVkaWN0b3JzIDwtIG5hbWVzKGVuc2VtYmxlRGF0YSlbbmFtZXMoZW5zZW1ibGVEYXRhKSAhPSBsYWJlbE5hbWVdDQpgYGANCg0KY29udHJvbCB0aGUgbnVtYmVyIG9mIGNyb3NzLXZhbGlkYXRpb25zIHBlcmZvcm1lZCAodGhlIG1vcmUgdGhlIGJldHRlcik6DQoNCmBgYHtyfQ0KbXlDb250cm9sIDwtIHRyYWluQ29udHJvbChtZXRob2Q9J2N2JywgbnVtYmVyPTMsIHJldHVyblJlc2FtcD0nbm9uZScpDQpgYGANCg0KDQojIyBCZW5jaG1hcmsgbW9kZWwNCg0KY3JlYXRlIGEgYmVuY2htYXJrIG1vZGVsIHRvIGNvbXBhcmUgb3RoZXJzIGFnYWluc3QuICBVc2luZyBgZ2JtYCBHZW5lcmFsaXplZCBCb29zdGVkIFJlZ3Jlc3Npb24gTW9kZWwNCmBgYHtyfQ0KdGVzdF9tb2RlbCA8LSB0cmFpbihibGVuZGVyRGF0YVsscHJlZGljdG9yc10sIGJsZW5kZXJEYXRhWyxsYWJlbE5hbWVdLCBtZXRob2Q9J2dibScsIHRyQ29udHJvbD1teUNvbnRyb2wpDQpgYGANCg0KDQp0cmFpbiBhbmQgZXZhbHVhdGUgYmVuY2htYXJrIG1vZGVsDQpgYGB7cn0NCnByZWRzIDwtIHByZWRpY3Qob2JqZWN0PXRlc3RfbW9kZWwsIHRlc3RpbmdEYXRhWyxwcmVkaWN0b3JzXSkNCmF1YyA8LSByb2ModGVzdGluZ0RhdGFbLGxhYmVsTmFtZV0sIHByZWRzKSAjYXJlYSB1bmRlciBjdXJ2ZQ0KcHJpbnQoYXVjJGF1YykNCmF1Yy5tdWx0aSA8LSBtdWx0aWNsYXNzLnJvYyh0ZXN0aW5nRGF0YVssbGFiZWxOYW1lXSwgcHJlZHMpDQpgYGANCg0KIyMgQ3JlYXRlIGVtc2VtYmxlcw0KDQo=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkVuZ2xhbmQgUGVhdCBEZXB0aCBNb2RlbDogVHJhaW4gZW5zZW1ibGUgbW9kZWxzIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KQ291cnRlc3kgb2YgaHR0cHM6Ly9hbXVuYXRlZ3VpLmdpdGh1Yi5pby9ibGVuZGluZy1tb2RlbHMvDQoNCg0KTm90ZTogdGhpcyBuZWVkcyB0byBiZSBhYmFuZG9uZWQsIGJlY2F1c2UgdGhlIGV4YW1wbGUgaXMgYSBjbGFzc2lmaWNhdGlvbiBwcm9ibGVtIG5vdCBhIHJlZ3Jlc3Npb24gcHJvYmxlbS4gIA0KDQoNCiMjIFBhY2thZ2VzIA0KYGBge3IsIGluY2x1ZGU9RkFMU0V9DQpsaWJyYXJ5KHJhc3RlcikNCmxpYnJhcnkocmdkYWwpDQoNCmxpYnJhcnkoY2FyZXQpDQpsaWJyYXJ5KHBhcmFsbGVsKQ0KbGlicmFyeShkb1BhcmFsbGVsKQ0KDQpsaWJyYXJ5KHBST0MpDQpgYGANCg0KIyMgTG9hZCBkYXRhDQpgYGB7cn0NCmxvYWQoZmlsZSA9ICIuLi9kYXRhL2lucHV0LmRhdGEucmRzIikNCmBgYA0KDQoNCmBgYHtyfQ0KcmVzYW1wbGVzKGxpc3QoYzUuMD1maXQuYzUwLCBnYm09Zml0LmdibSkpDQpgYGANCg0KDQo=</div>
 
 
 

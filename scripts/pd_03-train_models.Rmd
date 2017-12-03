@@ -12,6 +12,8 @@ library(rgdal)
 
 library(randomForest)
 library(Rborist)
+library(e1071)
+library(kernlab)
 
 library(caret)
 library(parallel)
@@ -144,15 +146,39 @@ save(Mgbm2a, file = "../data/models/Mgbm2a.rds")
 Mgbm2a
 ```
 
+train support vector machine (SVM)
+
+```{r}
+#standardise training data first
+#preproc_stand <- preProcess(training, method = c("center", "scale"))
+#training_stand <- predict(preproc_stand, training); summary(training_stand)
+
+Msvm2a <- train(PEAT_DEPTH ~ ., 
+                data = training, 
+                method = "svmLinear", # Linear Kernel
+                preProc = c("center", "scale")) #standardise data
+
+save(Msvm2a, file = "../data/models/Msvm2a.rds")
+
+Msvm2a
+```
 
 
 ## Evaluate models
-
-
+```{r}
+#load models
+load("../data/models/Mlm2a.rds")
+load("../data/models/Mrf2a.rds")
+load("../data/models/Mglm2a.rds")
+load("../data/models/Mbglm2a.rds")
+load("../data/models/Mgam2a.rds")
+load("../data/models/Mgbm2a.rds")
+load("../data/models/Msvm2a.rds")
+```
 
 ```{r}
 cvValues <- resamples(list(LM = Mlm2a, RF = Mrf2a, GLM = Mglm2a, GLMB = Mbglm2a, 
-                           GAM = Mgam2a, GBM = Mgbm2a))
+                           GAM = Mgam2a, GBM = Mgbm2a, SVM = Msvm2a))
 summary(cvValues)
 splom(cvValues, metric = "Rsquared")
 parallelplot(cvValues, metric = "Rsquared")
@@ -168,17 +194,27 @@ dotplot(Diffs, metric = "Rsquared")
 ## predict test data from model and evaluate
 
 ```{r}
-lm_pred <- predict(Mlm2a, training)
+#transform testing data
 
-rf_pred <- predict(Mrf2a, training)
+preproc_stand <- preProcess(testing, method = c("center", "scale"))
+testing_stand <- predict(preproc_stand, testing)
+```
 
-glm_pred <- predict(Mglm2a, training)
 
-glmb_pred <- predict(Mbglm2a, training) 
+```{r}
+lm_pred <- predict(Mlm2a, testing)
 
-gam_pred <- predict(Mgam2a, training)
+rf_pred <- predict(Mrf2a, testing)
 
-gbm_pred <- predict(Mgbm2a, training)
+glm_pred <- predict(Mglm2a, testing)
+
+glmb_pred <- predict(Mbglm2a, testing) 
+
+gam_pred <- predict(Mgam2a, testing)
+
+gbm_pred <- predict(Mgbm2a, testing)
+
+svm_pred <- predict(Msvm2a, testing)
 
 ```
 
@@ -193,17 +229,21 @@ Calculate deviation
 
 ```{r}
 mod_variance <- data.frame(rbind(
-  postResample(pred = lm_pred, obs = training$PEAT_DEPTH),
-  postResample(pred = rf_pred, obs = training$PEAT_DEPTH),
-  postResample(pred = glm_pred, obs = training$PEAT_DEPTH),
-  postResample(pred = glmb_pred, obs = training$PEAT_DEPTH),
-  postResample(pred = gam_pred, obs = training$PEAT_DEPTH),
-  postResample(pred = gbm_pred, obs = training$PEAT_DEPTH)
+  postResample(pred = lm_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = rf_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = glm_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = glmb_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = gam_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = gbm_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = svm_pred, obs = testing$PEAT_DEPTH)
 ))
 
-mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", "gam", "gbm"), mod_variance)
+mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", "gam", "gbm", "svm"), mod_variance)
 mod_variance
 ```
+
+
+
 
 ## Train full models
 
