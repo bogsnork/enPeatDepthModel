@@ -17,7 +17,7 @@ library(tidyverse)
 
 ```{r}
 
-observations <- readOGR(dsn = "../data/peat_obs_YD.shp", verbose = TRUE)
+observations <- readOGR(dsn = "../data/peat_obs.shp", verbose = TRUE)
 
 ```
 

@@ -10,6 +10,7 @@ output:
 ```{r, include=FALSE}
 library(raster)
 library(rgdal)
+library(tidyverse)
 ```
 
 
@@ -22,28 +23,22 @@ list.files(path = "../data")
 
 ## Import environmental and topographic data
 ```{r}
-#elevation
-elev <- raster("../data/Ground Elevation © CEH1.tif")
-
-#surface type
-surf <- raster("../data/Surface Type © CEH1.tif")
-
-#inflow pattern
-inflow <- raster("../data/Inflow Pattern © CEH1.tif")
-
-#outflow pattern
-outflow <- raster("../data/Outflow Pattern © CEH1.tif")
-
-#distance from moorland line
-moorline <- raster("../data/moorland_distance_all.tif")
+#load(file = "../data/topo_env_data_2.rda")
+#elev <- read_rds(path = "../data/elev.rds")
+load("../data/elev.Rdata")
+load("../data/surf.Rdata")
+load("../data/predictor_stack.Rdata")
+plot(elev)
+plot(predictors$elev)
 ```
 
 ### Calculate derrived data
  
 ```{r}
-slope <- terrain(x = elev, opt = "slope", unit = "radians", neighbors = 8)
+slope <- raster::terrain(x = elev, opt='slope', unit='radians', neighbors=8)
 
-aspect <- terrain(x = elev, opt = "aspect", unit = "degrees", neighbors = 8)
+aspect <- terrain(x = elev, opt = "aspect", unit = "degrees",
+                  neighbors = 8, filename = "../data/slope.tif")
 ```
 
 
