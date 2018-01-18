@@ -26,6 +26,11 @@ load(file = "../data/input.data.rds")
 dim(input.data)
 ```
 
+### create directory if necessary
+```{r}
+dir.create("../data/models")
+```
+
 
 ## Start Parallel Processing
 ```{r}
@@ -53,7 +58,7 @@ testing <- input.data[-inTrain,]
 Training data has `r nrow(training)` records.  Testing data has `r nrow(testing)` records.  
 
 #### train model
-Need the latest version of caret from github to avoid known bug.
+**Need the latest version of caret from github to avoid known bug.**
 
 set model parameters
 ```{r}
@@ -62,88 +67,88 @@ params <- trainControl(method = "cv", number = 10)
 
 train linear model
 ```{r}
-Mlm2a <- train(PEAT_DEPTH ~ ., 
+Mlmuk1a <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "lm")
 
-save(Mlm2a, file = "../data/models/Mlm2a.rds")
+save(Mlmuk1a, file = "../data/models/Mlmuk1a.rds")
 
-Mlm2a
+Mlmuk1a
 ```
 
 train random forest model
 ```{r}
-Mrf2a <- train(PEAT_DEPTH ~ ., 
+Mrfuk1a <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "Rborist")
 
-save(Mrf2a, file = "../data/models/Mrf2a.rds")
+save(Mrfuk1a, file = "../data/models/Mrfuk1a.rds")
 
-Mrf2a
+Mrfuk1a
 ```
 
 
 ```{r}
-rbind(getTrainPerf(Mlm2a), getTrainPerf(Mrf2a))
+rbind(getTrainPerf(Mlmuk1a), getTrainPerf(Mrfuk1a))
 ```
 
 train generalised linear model
 ```{r}
-Mglm2a <- train(PEAT_DEPTH ~ ., 
+Mglmuk1a <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "glm")
 
-save(Mglm2a, file = "../data/models/Mglm2a.rds")
+save(Mglmuk1a, file = "../data/models/Mglmuk1a.rds")
 
-Mglm2a
+Mglmuk1a
 ```
 
 train boosted generalised linear model
 ```{r}
-Mbglm2a <- train(PEAT_DEPTH ~ ., 
+Mbglmuk1a <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "glmboost")
 
-save(Mbglm2a, file = "../data/models/Mbglm2a.rds")
+save(Mbglmuk1a, file = "../data/models/Mbglmuk1a.rds")
 
-Mbglm2a
+Mbglmuk1a
 ```
 
 train k nearest neighbours model
 
 ```{r}
-Mknn2a <- train(PEAT_DEPTH ~ ., 
+Mknnuk1a <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "knn")
 
-save(Mknn2a, file = "../data/models/Mknn2a.rds")
+save(Mknnuk1a, file = "../data/models/Mknnuk1a.rds")
 
-Mknn2a
+Mknnuk1a
 ```
 
 
 train Generalised Additive Model 
 
 ```{r}
-Mgam2a <- train(PEAT_DEPTH ~ ., 
+Mgamuk1a <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "gam")
 
-save(Mgam2a, file = "../data/models/Mgam2a.rds")
+save(Mgamuk1a, file = "../data/models/Mgamuk1a.rds")
 
-Mgam2a
+Mgamuk1a
 ```
 
 train Gradient Boosting Model 
 
 ```{r}
-Mgbm2a <- train(PEAT_DEPTH ~ ., 
+Mgbmuk1a <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "gbm")
 
-save(Mgbm2a, file = "../data/models/Mgbm2a.rds")
+save(Mgbmuk1a, file = "../data/models/Mgbmuk1a.rds")
 
-Mgbm2a
+Mgbmuk1a
 ```
 
 train support vector machine (SVM)
@@ -153,32 +158,32 @@ train support vector machine (SVM)
 #preproc_stand <- preProcess(training, method = c("center", "scale"))
 #training_stand <- predict(preproc_stand, training); summary(training_stand)
 
-Msvm2a <- train(PEAT_DEPTH ~ ., 
+Msvmuk1a <- train(PEAT_DEPTH ~ ., 
                 data = training, 
                 method = "svmLinear", # Linear Kernel
                 preProc = c("center", "scale")) #standardise data
 
-save(Msvm2a, file = "../data/models/Msvm2a.rds")
+save(Msvmuk1a, file = "../data/models/Msvmuk1a.rds")
 
-Msvm2a
+Msvmuk1a
 ```
 
 
 ## Evaluate models
 ```{r}
 #load models
-load("../data/models/Mlm2a.rds")
-load("../data/models/Mrf2a.rds")
-load("../data/models/Mglm2a.rds")
-load("../data/models/Mbglm2a.rds")
-load("../data/models/Mgam2a.rds")
-load("../data/models/Mgbm2a.rds")
-load("../data/models/Msvm2a.rds")
+load("../data/models/Mlmuk1a.rds")
+load("../data/models/Mrfuk1a.rds")
+load("../data/models/Mglmuk1a.rds")
+load("../data/models/Mbglmuk1a.rds")
+load("../data/models/Mgamuk1a.rds")
+load("../data/models/Mgbmuk1a.rds")
+load("../data/models/Msvmuk1a.rds")
 ```
 
 ```{r}
-cvValues <- resamples(list(LM = Mlm2a, RF = Mrf2a, GLM = Mglm2a, GLMB = Mbglm2a, 
-                           GAM = Mgam2a, GBM = Mgbm2a, SVM = Msvm2a))
+cvValues <- resamples(list(LM = Mlmuk1a, RF = Mrfuk1a, GLM = Mglmuk1a, GLMB = Mbglmuk1a, 
+                           GAM = Mgamuk1a, GBM = Mgbmuk1a, SVM = Msvmuk1a))
 summary(cvValues)
 splom(cvValues, metric = "Rsquared")
 parallelplot(cvValues, metric = "Rsquared")
@@ -202,19 +207,19 @@ testing_stand <- predict(preproc_stand, testing)
 
 
 ```{r}
-lm_pred <- predict(Mlm2a, testing)
+lm_pred <- predict(Mlmuk1a, testing)
 
-rf_pred <- predict(Mrf2a, testing)
+rf_pred <- predict(Mrfuk1a, testing)
 
-glm_pred <- predict(Mglm2a, testing)
+glm_pred <- predict(Mglmuk1a, testing)
 
-glmb_pred <- predict(Mbglm2a, testing) 
+glmb_pred <- predict(Mbglmuk1a, testing) 
 
-gam_pred <- predict(Mgam2a, testing)
+gam_pred <- predict(Mgamuk1a, testing)
 
-gbm_pred <- predict(Mgbm2a, testing)
+gbm_pred <- predict(Mgbmuk1a, testing)
 
-svm_pred <- predict(Msvm2a, testing)
+svm_pred <- predict(Msvmuk1a, testing)
 
 ```
 
@@ -248,28 +253,28 @@ mod_variance
 ## Train full models
 
 ```{r}
-Mlm2a.full <- train(PEAT_DEPTH ~ ., 
+Mlmuk1a.full <- train(PEAT_DEPTH ~ ., 
               data = input.data, 
               method = "lm")
 
-save(Mlm2a.full, file = "../data/models/Mlm2a.full.rds")
+save(Mlmuk1a.full, file = "../data/models/Mlmuk1a.full.rds")
 
-Mlm2a.full
+Mlmuk1a.full
 ```
 
 train model
 ```{r}
-Mrf2a.full <- train(PEAT_DEPTH ~ ., 
+Mrfuk1a.full <- train(PEAT_DEPTH ~ ., 
               data = input.data, 
               method = "Rborist")
 
-save(Mrf2a.full, file = "../data/models/Mrf2a.full.rds")
+save(Mrfuk1a.full, file = "../data/models/Mrfuk1a.full.rds")
 
-Mrf2a.full
+Mrfuk1a.full
 ```
 
 evaluate
 ```{r}
-rbind(getTrainPerf(Mlm2a.full), getTrainPerf(Mrf2a.full))
+rbind(getTrainPerf(Mlmuk1a.full), getTrainPerf(Mrfuk1a.full))
 ```
 
