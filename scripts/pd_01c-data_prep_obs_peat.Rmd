@@ -19,8 +19,9 @@ list.files(path = "../data", pattern = ".shp")
 
 observationsSPDF <- readOGR(dsn = "../data/peat_depth_survey_data_noGPR.shp", verbose = TRUE)
 
-#model.area <- readOGR(dsn = "../data/YD_pilot_boundary.shp")
-#no_PHIBB <- readOGR(dsn = "../data/YD_pilot_no_PHIBB.shp")
+# #prepare area to crop data to
+# model.area <- readOGR(dsn = "../data/YD_pilot_boundary.shp")
+# no_PHIBB <- readOGR(dsn = "../data/YD_pilot_no_PHIBB.shp")
 ```
 
 have a look: 

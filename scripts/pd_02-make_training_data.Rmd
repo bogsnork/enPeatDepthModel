@@ -5,13 +5,35 @@ output: html_notebook
 
 ## Packages 
 ```{r}
+#general
+library(tidyverse)
+
+#spatial
 library(raster)
 library(rgdal)
 
-library(tidyverse)
+#data import
+library(aws.s3)
+library(aws.ec2metadata)
 ```
 
 ## Import data
+
+### Set credentials for S3 import
+```{r}
+#list IAM roles in instance
+metadata$iam_role_names()
+
+#get specified rolename (if only 1 leave at 1)
+cred.role <- metadata$iam_role_names()[1]
+
+#this works if running R from within an EC2 instance
+Sys.setenv("AWS_ACCESS_KEY_ID" = metadata$iam_role(role = cred.role)$AccessKeyId,
+           "AWS_SECRET_ACCESS_KEY" = metadata$iam_role(role = cred.role)$SecretAccessKey,
+           "AWS_DEFAULT_REGION" = "eu-west-2",
+           "AWS_SESSION_TOKEN" = metadata$iam_role(role = cred.role)$Token)
+```
+
 
 ### Import observations
 
@@ -21,21 +43,30 @@ observations <- readOGR(dsn = "../data/peat_obs.shp", verbose = TRUE)
 
 ```
 
+### Import predictors in terminal
+```{bash}
+<!-- #instance needs to have awscli installed: sudo apt-get install awscli  -->
+<!-- #(prob need to ssh into it as rstudio user doesn't have sudo access) -->
+<!-- pwd -->
+<!-- cd /home/rstudio/enPeatDepthModel/data -->
+<!-- pwd -->
+<!-- aws s3 ls -->
+<!-- #copy entire folder -->
+<!-- aws s3 sync s3://ne-stats-data/enPeatDepthModel /home/rstudio/enPeatDepthModel/data/ -->
+```
 
 
 ### Import predictors
 ```{r}
-#predictors
-
 
  # Import environmental and topographic data
  elev <- raster("../data/topo_env_data.tif", band = 1)
- surf <- raster("../data/topo_env_data.tif", band = 2)
- inflow <- raster("../data/topo_env_data.tif", band = 3)
- outflow <- raster("../data/topo_env_data.tif", band = 4)
+ # surf <- raster("../data/topo_env_data.tif", band = 2)
+ # inflow <- raster("../data/topo_env_data.tif", band = 3)
+ # outflow <- raster("../data/topo_env_data.tif", band = 4)
  slope <- raster("../data/topo_env_data.tif", band = 5)
  aspect <- raster("../data/topo_env_data.tif", band = 6)
- moorline <- raster("../data/topo_env_data.tif", band = 7)
+ # moorline <- raster("../data/topo_env_data.tif", band = 7)
 
  # Import UKCP09 climate data
  gdd_1960_90_ann <- raster("../data/ukcp09GriddedDataAnnPrepd.tif", band = 1)
@@ -52,7 +83,7 @@ observations <- readOGR(dsn = "../data/peat_obs.shp", verbose = TRUE)
 make a raster stack
 ```{r}
  predictors <- stack(
-   elev, aspect, slope, outflow, inflow, 
+   elev, aspect, slope, 
    gdd_1960_90_ann, gsl_1960_90_ann,
    rain_1960_90_annual, rain_daily_mean_1960_90_annual,
    raindays_10mm_1960_90_annual, raindays_1mm_1960_90_annual,
@@ -60,43 +91,53 @@ make a raster stack
    temp_max_1960_90_annual
  )
  
- names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow",
+ names(predictors) <- c("elev", "aspect", "slope", 
                         "gdd", "gsl", "rain_ann", "rain_daily", "raindays_10mm", 
                         "raindays_1mm", "temp_mean", "temp_min", "temp_max")
+ 
+ #clean up
+  rm(
+   elev, aspect, slope, 
+   gdd_1960_90_ann, gsl_1960_90_ann,
+   rain_1960_90_annual, rain_daily_mean_1960_90_annual,
+   raindays_10mm_1960_90_annual, raindays_1mm_1960_90_annual,
+   temp_mean_1960_90_annual, temp_min_1960_90_annual, 
+   temp_max_1960_90_annual
+ )
 ```
 
 crop to training data extent
 
 ```{r}
-boundbox <- observations@bbox; boundbox 
- 
- predictors <- raster::crop(x = predictors, y = boundbox)
- 
- predictors.all <- stack(predictors)
+# boundbox <- observations@bbox; boundbox 
+#  
+#  predictors <- raster::crop(x = predictors, y = boundbox)
+#  
+#  predictors.all <- stack(predictors)
 ```
 
 export
 ```{r}
-writeRaster(x = predictors.all, filename = "../data/predictor_stack.tif", overwrite = TRUE)
+# writeRaster(x = predictors, filename = "../data/predictor_stack.tif", overwrite = TRUE)
 ```
 
 import cropped raster stack
 
 ```{r}
-elev <- raster("../data/predictor_stack.tif", band = 1)
-aspect <- raster("../data/predictor_stack.tif", band = 2)
-slope <- raster("../data/predictor_stack.tif", band = 3)
-outflow <- raster("../data/predictor_stack.tif", band = 4)
-inflow <- raster("../data/predictor_stack.tif", band = 5)
-gdd <- raster("../data/predictor_stack.tif", band = 6)
-gsl <- raster("../data/predictor_stack.tif", band = 7)
-rain_ann <- raster("../data/predictor_stack.tif", band = 8)
-rain_daily <- raster("../data/predictor_stack.tif", band = 9)
-raindays_10mm <- raster("../data/predictor_stack.tif", band = 10)
-raindays_1mm <- raster("../data/predictor_stack.tif", band = 11)
-temp_mean <- raster("../data/predictor_stack.tif", band = 12)
-temp_min <- raster("../data/predictor_stack.tif", band = 13)
-temp_max <- raster("../data/predictor_stack.tif", band = 14)
+# elev <- raster("../data/predictor_stack.tif", band = 1)
+# aspect <- raster("../data/predictor_stack.tif", band = 2)
+# slope <- raster("../data/predictor_stack.tif", band = 3)
+# outflow <- raster("../data/predictor_stack.tif", band = 4)
+# inflow <- raster("../data/predictor_stack.tif", band = 5)
+# gdd <- raster("../data/predictor_stack.tif", band = 6)
+# gsl <- raster("../data/predictor_stack.tif", band = 7)
+# rain_ann <- raster("../data/predictor_stack.tif", band = 8)
+# rain_daily <- raster("../data/predictor_stack.tif", band = 9)
+# raindays_10mm <- raster("../data/predictor_stack.tif", band = 10)
+# raindays_1mm <- raster("../data/predictor_stack.tif", band = 11)
+# temp_mean <- raster("../data/predictor_stack.tif", band = 12)
+# temp_min <- raster("../data/predictor_stack.tif", band = 13)
+# temp_max <- raster("../data/predictor_stack.tif", band = 14)
 ```
 
 
@@ -115,22 +156,21 @@ names(input.data) <- "PEAT_DEPTH"
 #input.data$PEATTYPE <- observations$PEATTYPE #not a predictor
 
 #extract environmental and topographic data for each peat depth measurement
-input.data$elev <- raster::extract(elev, coordinates(observations)[,1:2])
-input.data$aspect <- raster::extract(aspect, coordinates(observations)[,1:2])
-input.data$slope <- raster::extract(slope, coordinates(observations)[,1:2])
-input.data$outflow <- raster::extract(outflow, coordinates(observations)[,1:2])
-input.data$inflow <- raster::extract(inflow, coordinates(observations)[,1:2])
+input.data$elev <- raster::extract(predictors$elev, coordinates(observations)[,1:2])
+input.data$aspect <- raster::extract(predictors$aspect, coordinates(observations)[,1:2])
+input.data$slope <- raster::extract(predictors$slope, coordinates(observations)[,1:2])
+
 
 #extract climate data for each peat depth measurement
-input.data$gdd <- raster::extract(gdd, coordinates(observations)[,1:2])
-input.data$gsl <- raster::extract(gsl, coordinates(observations)[,1:2])
-input.data$rain_ann <- raster::extract(rain_ann, coordinates(observations)[,1:2])
-input.data$rain_daily <- raster::extract(rain_daily, coordinates(observations)[,1:2])
-input.data$raindays_10mm <- raster::extract(raindays_10mm, coordinates(observations)[,1:2])
-input.data$raindays_1mm <- raster::extract(raindays_1mm, coordinates(observations)[,1:2])
-input.data$temp_mean <- raster::extract(temp_mean, coordinates(observations)[,1:2])
-input.data$temp_min <- raster::extract(temp_min, coordinates(observations)[,1:2])
-input.data$temp_max <- raster::extract(temp_max, coordinates(observations)[,1:2])
+input.data$gdd <- raster::extract(predictors$gdd, coordinates(observations)[,1:2])
+input.data$gsl <- raster::extract(predictors$gsl, coordinates(observations)[,1:2])
+input.data$rain_ann <- raster::extract(predictors$rain_ann, coordinates(observations)[,1:2])
+input.data$rain_daily <- raster::extract(predictors$rain_daily, coordinates(observations)[,1:2])
+input.data$raindays_10mm <- raster::extract(predictors$raindays_10mm, coordinates(observations)[,1:2])
+input.data$raindays_1mm <- raster::extract(predictors$raindays_1mm, coordinates(observations)[,1:2])
+input.data$temp_mean <- raster::extract(predictors$temp_mean, coordinates(observations)[,1:2])
+input.data$temp_min <- raster::extract(predictors$temp_min, coordinates(observations)[,1:2])
+input.data$temp_max <- raster::extract(predictors$temp_max, coordinates(observations)[,1:2])
 ```
 
 
@@ -154,13 +194,4 @@ save(input.data, file="../data/input.data.rds")
 write.csv(input.data, file = "../data/input_data.csv", row.names = F)
 ```
 
-# Preprocess data
-
-```{r}
-load(file = "../data/input.data.rds")
-```
-
-```{r}
-
-```
 
