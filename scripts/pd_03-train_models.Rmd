@@ -97,12 +97,44 @@ save(Mlmuk1a, file = "../data/models/Mlmuk1a.rds")
 
 Mlmuk1a
 ```
-```{r}
 
-# rboristGrid <-  expand.grid(#nTree= 1,
-#                             minNode= 30,
-#                             predFixed = 2)
-#params <- trainControl(method = "cv", number = 1)
+
+train random forest model
+```{r}
+#   starttime <- Sys.time()
+# 
+# #using Rborist direct (not with caret) to tune parameters for quicker processing
+# #tried different number of trees, 200 trees (model Mrfuk1ag) gave only marginal improvement over 100 (model Mrfuk1af) so settled on 100 trees. both took under 30 minutes.
+# #
+# # Mrfuk1af <- Rborist(x = training[-1], y = training$PEAT_DEPTH,
+# #                    nTree=100,
+# #                    minNode=3,
+# #                    predFixed = 2)
+# 
+# #too slow in caret
+# # Mrfuk1ah <- train(PEAT_DEPTH ~ .,
+# #               data = training,
+# #               method = "Rborist",
+# #               nTree = 100,
+# #               trControl = params)
+# 
+# 
+#   modeltime <- rbind(modeltime,
+#                      data.frame(model = "Mrfuk1ah",
+#                                 insType = aws.ec2metadata::metadata$instance_type(),
+#                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
+# save(Mrfuk1ah, file = "../data/models/Mrfuk1ah.rds")
+# 
+# Mrfuk1ah
+# # Mrfuk1af$training$call
+# # Mrfuk1af$validation[2:4]
+# # Mrfuk1ag$training$call
+# # Mrfuk1ag$validation[2:4]
+# #
+
+```
+
+```{r}
 
   starttime <- Sys.time()
 
@@ -111,57 +143,21 @@ Mrfuk1ah <- train(PEAT_DEPTH ~ .,
               method = "ranger", 
               num.trees = 100)
               
-
-#using Rborist direct (not with caret) to tune parameters for quicker processing
-#tried different number of trees, 200 trees (model Mrfuk1ag) gave only marginal improvement over 100 (model Mrfuk1af) so settled on 100 trees.
-
-# Mrfuk1af <- Rborist(x = training[-1], y = training$PEAT_DEPTH, 
-#                    nTree=100,
-#                    minNode=3,
-#                    predFixed = 2)
-
   modeltime <- rbind(modeltime, 
                      data.frame(model = "Mrfuk1ah",
                                 insType = aws.ec2metadata::metadata$instance_type(),
-                                time_mins = difftime(Sys.time(), starttime, units = "mins")))  
+                                time_mins = difftime(Sys.time(), starttime, units = "mins"))) 
+
+  save(Mrfuk1ah, file = "../data/models/Mrfuk1ah.rds")
 
 Mrfuk1ah
 
+Mrfuk1a <- Mrfuk1ah
+save(Mrfuk1a, file = "../data/models/Mrfuk1a.rds")
+
 ```
 
-train random forest model
-```{r}
-  starttime <- Sys.time()
 
-Mrfuk1ah <- train(PEAT_DEPTH ~ .,
-              data = training,
-              method = "Rborist", 
-              nTree = 100, 
-              trControl = params)
-
-#using Rborist direct (not with caret) to tune parameters for quicker processing
-#tried different number of trees, 200 trees (model Mrfuk1ag) gave only marginal improvement over 100 (model Mrfuk1af) so settled on 100 trees. both took under 30 minutes. 
-# 
-# Mrfuk1af <- Rborist(x = training[-1], y = training$PEAT_DEPTH, 
-#                    nTree=100,
-#                    minNode=3,
-#                    predFixed = 2)
-
-  modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mrfuk1ah",
-                                insType = aws.ec2metadata::metadata$instance_type(),
-                                time_mins = difftime(Sys.time(), starttime, units = "mins")))  
-save(Mrfuk1ah, file = "../data/models/Mrfuk1ah.rds")
-
-Mrfuk1ah
-# Mrfuk1af$training$call
-# Mrfuk1af$validation[2:4]
-# Mrfuk1ag$training$call
-# Mrfuk1ag$validation[2:4]
-# 
-# Mrfuk1a <- Mrfuk1af
-# save(Mrfuk1a, file = "../data/models/Mrfuk1a.rds")
-```
 
 
 ```{r}
@@ -391,7 +387,8 @@ train model
 
 Mrfuk1a.full <- train(PEAT_DEPTH ~ ., 
               data = input.data, 
-              method = "Rborist")
+              method = "ranger",
+              num.trees = 100)
 
   modeltime <- rbind(modeltime, 
                      data.frame(model = "Mrfuk1a.full",
@@ -412,3 +409,21 @@ rbind(getTrainPerf(Mlmuk1a.full), getTrainPerf(Mrfuk1a.full))
 dir.create("../outputs")
 write.csv(x = modeltime, file = as.character(paste0("../outputs/modeltime", "_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv")), row.names = FALSE)
 ```
+
+###export to S3
+
+```{bash}
+#instance needs to have awscli installed: sudo apt-get install awscli
+#(prob need to ssh into it as rstudio user doesn't have sudo access)
+pwd
+
+aws s3 ls
+#copy entire folder
+aws s3 sync /home/rstudio/enPeatDepthModel/data/models s3://ne-stats-data/enPeatDepthModel/data/models 
+
+aws s3 sync /home/rstudio/enPeatDepthModel/outputs s3://ne-stats-data/enPeatDepthModel/outputs
+
+
+```
+
+
