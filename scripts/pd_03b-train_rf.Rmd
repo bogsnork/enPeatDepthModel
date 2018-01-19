@@ -1,0 +1,414 @@
+---
+title: "England Peat Depth Model: Train models"
+output: html_notebook
+---
+
+#Peat Depths: run models
+
+## Packages 
+```{r, include=FALSE}
+library(raster)
+library(rgdal)
+
+library(randomForest)
+library(Rborist)
+library(e1071)
+library(kernlab)
+library(ranger)
+
+library(caret)
+library(parallel)
+library(doParallel)
+
+#data import
+library(aws.s3)
+library(aws.ec2metadata)
+
+```
+
+## Load data
+```{r}
+load(file = "../data/input.data.rds")
+dim(input.data)
+```
+
+### create directory if necessary
+```{r}
+dir.create("../data/models")
+```
+
+
+## Start Parallel Processing
+```{r}
+detectCores()
+getDoParWorkers()
+cl <- makeCluster(detectCores()-1)
+registerDoParallel(cl)
+getDoParName()
+getDoParWorkers()
+#registerDoSEQ() # to stop parallel processing
+```
+
+
+## Make training and test sets
+
+```{r}
+set.seed(123)
+inTrain <- createDataPartition(y = input.data$PEAT_DEPTH, 
+                               p = .75, # The percentage of data in the training set
+                               list = FALSE) # The format of the results
+
+training <- input.data[inTrain,]
+testing <- input.data[-inTrain,]
+```
+Training data has `r nrow(training)` records.  Testing data has `r nrow(testing)` records.  
+
+#### train model
+**Need the latest version of caret from github to avoid known bug.**
+
+set model parameters
+```{r}
+params <- trainControl(method = "cv", number = 10)
+```
+
+set up system performance monitoring
+```{r}
+# modeltime <- data.frame(model = as.character(), 
+#                         insType = as.character(),
+#                         time_mins = as.difftime(character()))
+```
+
+
+
+train linear model
+```{r}
+  starttime <- Sys.time()
+
+Mlmuk1a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "lm")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mlmuk1a",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+
+save(Mlmuk1a, file = "../data/models/Mlmuk1a.rds")
+
+Mlmuk1a
+```
+```{r}
+
+# rboristGrid <-  expand.grid(#nTree= 1,
+#                             minNode= 30,
+#                             predFixed = 2)
+#params <- trainControl(method = "cv", number = 1)
+
+  starttime <- Sys.time()
+
+Mrfuk1ah <- train(PEAT_DEPTH ~ .,
+              data = training,
+              method = "ranger", 
+              num.trees = 100)
+              
+
+#using Rborist direct (not with caret) to tune parameters for quicker processing
+#tried different number of trees, 200 trees (model Mrfuk1ag) gave only marginal improvement over 100 (model Mrfuk1af) so settled on 100 trees.
+
+# Mrfuk1af <- Rborist(x = training[-1], y = training$PEAT_DEPTH, 
+#                    nTree=100,
+#                    minNode=3,
+#                    predFixed = 2)
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mrfuk1ah",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))  
+
+Mrfuk1ah
+
+```
+
+train random forest model
+```{r}
+  starttime <- Sys.time()
+
+Mrfuk1ah <- train(PEAT_DEPTH ~ .,
+              data = training,
+              method = "Rborist", 
+              nTree = 100, 
+              trControl = params)
+
+#using Rborist direct (not with caret) to tune parameters for quicker processing
+#tried different number of trees, 200 trees (model Mrfuk1ag) gave only marginal improvement over 100 (model Mrfuk1af) so settled on 100 trees. both took under 30 minutes. 
+# 
+# Mrfuk1af <- Rborist(x = training[-1], y = training$PEAT_DEPTH, 
+#                    nTree=100,
+#                    minNode=3,
+#                    predFixed = 2)
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mrfuk1ah",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))  
+save(Mrfuk1ah, file = "../data/models/Mrfuk1ah.rds")
+
+Mrfuk1ah
+# Mrfuk1af$training$call
+# Mrfuk1af$validation[2:4]
+# Mrfuk1ag$training$call
+# Mrfuk1ag$validation[2:4]
+# 
+# Mrfuk1a <- Mrfuk1af
+# save(Mrfuk1a, file = "../data/models/Mrfuk1a.rds")
+```
+
+
+```{r}
+rbind(getTrainPerf(Mlmuk1a), getTrainPerf(Mrfuk1a))
+```
+
+train generalised linear model
+```{r}
+  starttime <- Sys.time()
+
+Mglmuk1a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "glm")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mglmuk1a",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+save(Mglmuk1a, file = "../data/models/Mglmuk1a.rds")
+
+Mglmuk1a
+```
+
+train boosted generalised linear model
+```{r}
+  starttime <- Sys.time()
+
+Mbglmuk1a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "glmboost")
+
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mbglmuk1a",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+save(Mbglmuk1a, file = "../data/models/Mbglmuk1a.rds")
+
+Mbglmuk1a
+```
+
+train k nearest neighbours model
+
+```{r}
+  starttime <- Sys.time()
+
+Mknnuk1a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "knn")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mknnuk1a",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+save(Mknnuk1a, file = "../data/models/Mknnuk1a.rds")
+
+Mknnuk1a
+```
+
+
+train Generalised Additive Model 
+
+```{r}
+  starttime <- Sys.time()
+
+Mgamuk1a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "gam")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mgamuk1a",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+save(Mgamuk1a, file = "../data/models/Mgamuk1a.rds")
+
+Mgamuk1a
+```
+
+train Gradient Boosting Model 
+
+```{r}
+  starttime <- Sys.time()
+
+Mgbmuk1a <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "gbm")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mgbmuk1a",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+save(Mgbmuk1a, file = "../data/models/Mgbmuk1a.rds")
+
+Mgbmuk1a
+```
+
+train support vector machine (SVM)
+
+```{r}
+#standardise training data first
+#preproc_stand <- preProcess(training, method = c("center", "scale"))
+#training_stand <- predict(preproc_stand, training); summary(training_stand)
+  starttime <- Sys.time()
+
+Msvmuk1a <- train(PEAT_DEPTH ~ ., 
+                data = training, 
+                method = "svmLinear", # Linear Kernel
+                preProc = c("center", "scale")) #standardise data
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Msvmuk1a",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+save(Msvmuk1a, file = "../data/models/Msvmuk1a.rds")
+
+Msvmuk1a
+```
+
+
+## Evaluate models
+```{r}
+#load models
+load("../data/models/Mlmuk1a.rds")
+load("../data/models/Mrfuk1a.rds")
+load("../data/models/Mglmuk1a.rds")
+load("../data/models/Mbglmuk1a.rds")
+load("../data/models/Mgamuk1a.rds")
+load("../data/models/Mgbmuk1a.rds")
+load("../data/models/Msvmuk1a.rds")
+```
+
+```{r}
+cvValues <- resamples(list(LM = Mlmuk1a, RF = Mrfuk1a, GLM = Mglmuk1a, GLMB = Mbglmuk1a, 
+                           GAM = Mgamuk1a, GBM = Mgbmuk1a, SVM = Msvmuk1a))
+summary(cvValues)
+splom(cvValues, metric = "Rsquared")
+parallelplot(cvValues, metric = "Rsquared")
+dotplot(cvValues, metric = "Rsquared")
+```
+
+```{r}
+Diffs <- diff(cvValues, metric = "Rsquared")
+summary(Diffs)
+dotplot(Diffs, metric = "Rsquared")
+```
+
+## predict test data from model and evaluate
+
+```{r}
+#transform testing data
+
+preproc_stand <- preProcess(testing, method = c("center", "scale"))
+testing_stand <- predict(preproc_stand, testing)
+```
+
+
+```{r}
+lm_pred <- predict(Mlmuk1a, testing)
+
+rf_pred <- predict(Mrfuk1a, testing)
+
+glm_pred <- predict(Mglmuk1a, testing)
+
+glmb_pred <- predict(Mbglmuk1a, testing) 
+
+gam_pred <- predict(Mgamuk1a, testing)
+
+gbm_pred <- predict(Mgbmuk1a, testing)
+
+svm_pred <- predict(Msvmuk1a, testing)
+
+```
+
+Calculate deviation
+
+**RMSE**: Root Mean Square Error. Standard deviation of the differences between predicted and observed values.  Measures accuracy.  Scale-dependent, so can't compare different datasets.  Sensitive to outliers. Smaller is better.  Calculated by   `sqrt(mean((pred - obs)^2` 
+
+**Rsquared**: Coefficient of determination.  The proportion of the variation in the observed variable that is predictable from the predicted variable.  Not scale dependent.  Closer to 1 is better. Calculated by `R^2 = 1-\frac{∑ (y_i - \hat{y}_i)^2}{∑ (y_i - \bar{y}_i)^2}`
+
+**MAE**: Mean Absolute Error.  The average of the difference between the absolute predicted and observed values.  Scale-dependent, so can't compare different datasets.  Sensitive to outliers. Smaller is better.  Calculated by `mean(abs(pred - obs))`
+
+
+```{r}
+mod_variance <- data.frame(rbind(
+  postResample(pred = lm_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = rf_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = glm_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = glmb_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = gam_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = gbm_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = svm_pred, obs = testing$PEAT_DEPTH)
+))
+
+mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", "gam", "gbm", "svm"), mod_variance)
+mod_variance
+```
+
+
+
+
+## Train full models
+
+```{r}
+  starttime <- Sys.time()
+
+Mlmuk1a.full <- train(PEAT_DEPTH ~ ., 
+              data = input.data, 
+              method = "lm")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mlmuk1a.full",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+save(Mlmuk1a.full, file = "../data/models/Mlmuk1a.full.rds")
+
+Mlmuk1a.full
+```
+
+train model
+```{r}
+  starttime <- Sys.time()
+
+Mrfuk1a.full <- train(PEAT_DEPTH ~ ., 
+              data = input.data, 
+              method = "Rborist")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mrfuk1a.full",
+                                insType = aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+save(Mrfuk1a.full, file = "../data/models/Mrfuk1a.full.rds")
+
+Mrfuk1a.full
+```
+
+evaluate
+```{r}
+rbind(getTrainPerf(Mlmuk1a.full), getTrainPerf(Mrfuk1a.full))
+```
+###export system performance stats: 
+```{r}
+dir.create("../outputs")
+write.csv(x = modeltime, file = as.character(paste0("../outputs/modeltime", "_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv")), row.names = FALSE)
+```
