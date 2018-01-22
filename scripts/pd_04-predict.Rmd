@@ -17,11 +17,17 @@ library(doParallel)
 ```{r}
 # model
 #load("../data/models/Mrf1.rds")
-Model <- Mrf1 
+Model <- Mrfuk1a.full 
 Model$coefnames
 ```
 
 ### Import predictors
+
+```{r}
+load("../data/predictor_stack.Rdata")
+plot(predictors)
+```
+
 
 ```{r}
 #import predictor stack
@@ -70,11 +76,24 @@ plot(elev)
 ## Predict outputs from predictors
 
 ```{r}
-# output <- raster::predict(predictors, Model)
-# 
-# writeRaster(x = output, filename = "../outputs/pd_lm_mod2a.tif", overwrite = TRUE)
-# 
-# plot(output)
+
+ starttime <- Sys.time()
+
+output <- raster::predict(predictors, Model)
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "pd_rf_moduk1a.tif",
+                                insType = #if not on EC2, use local
+                                  "local",
+                                  #aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+
+writeRaster(x = output, filename = "../outputs/pd_rf_moduk1a.tif", overwrite = TRUE)
+
+saveRDS(output, "../outputs/pd_rf_moduk1a.rds")
+
+plot(output)
 
 ```
 
