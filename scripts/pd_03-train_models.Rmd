@@ -15,6 +15,7 @@ library(Rborist)
 library(e1071)
 library(kernlab)
 library(mboost)
+library(ranger)
 
 library(caret)
 library(parallel)
@@ -244,18 +245,18 @@ Msvmuk1a
 ## Evaluate models
 ```{r}
 #load models
-# load("../data/models/Mlmuk1a.rds")
-# load("../data/models/Mrfuk1a.rds")
-# load("../data/models/Mglmuk1a.rds")
-# load("../data/models/Mbglmuk1a.rds")
-# load("../data/models/Mgamuk1a.rds")
-# load("../data/models/Mgbmuk1a.rds")
-# load("../data/models/Msvmuk1a.rds")
+load("../data/models/Mlmuk1a.rds")
+load("../data/models/Mrfuk1a.rds")
+load("../data/models/Mglmuk1a.rds")
+load("../data/models/Mbglmuk1a.rds")
+load("../data/models/Mgamuk1a.rds")
+load("../data/models/Mgbmuk1a.rds")
+load("../data/models/Msvmuk1a.rds")
 ```
 
 ```{r}
 cvValues <- resamples(list(LM = Mlmuk1a, 
-                           #RF = Mrfuk1a, 
+                           RF = Mrfuk1a, 
                            GLM = Mglmuk1a, 
                            GLMB = Mbglmuk1a, 
                            GAM = Mgamuk1a, 
@@ -286,7 +287,7 @@ testing_stand <- predict(preproc_stand, testing)
 ```{r}
 lm_pred <- predict(Mlmuk1a, testing)
 
-#rf_pred <- predict(Mrfuk1a, testing)
+rf_pred <- predict(Mrfuk1a, testing)
 
 glm_pred <- predict(Mglmuk1a, testing)
 
@@ -312,7 +313,7 @@ Calculate deviation
 ```{r}
 mod_variance <- data.frame(rbind(
   postResample(pred = lm_pred, obs = testing$PEAT_DEPTH),
-#  postResample(pred = rf_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = rf_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = glm_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = glmb_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = gam_pred, obs = testing$PEAT_DEPTH),
@@ -320,9 +321,9 @@ mod_variance <- data.frame(rbind(
   postResample(pred = svm_pred, obs = testing$PEAT_DEPTH)
 ))
 
-mod_variance <- cbind(model = c("lm", 
-                                # "rf", 
-                                "glm", "glmb", "gam", "gbm", "svm"), mod_variance)
+mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", 
+                                "gam", "gbm", "svm"), 
+                      mod_variance)
 mod_variance
 ```
 
