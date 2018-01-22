@@ -118,7 +118,7 @@ crop to training data extent
 
 export
 ```{r}
-# writeRaster(x = predictors, filename = "../data/predictor_stack.tif", overwrite = TRUE)
+ writeRaster(x = predictors, filename = "../data/predictor_stack.tif", overwrite = TRUE)
 ```
 
 import cropped raster stack

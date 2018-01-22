@@ -8,9 +8,14 @@ output:
 ```{r}
 library(raster)
 library(rgdal)
+library(ranger)
 
 library(parallel)
 library(doParallel)
+
+#data import
+library(aws.s3)
+library(aws.ec2metadata)
 ```
 
 ## Import data
@@ -45,16 +50,23 @@ aws s3 sync s3://ne-stats-data/enPeatDepthModel/data/models /home/rstudio/enPeat
 
 ## Load data
 ```{r}
-# model
-#load("../data/models/Mrf1.rds")
-Model <- Mrfuk1a.full 
-Model$coefnames
+#load models
+load("../data/models/Mlmuk1a.full.rds")
+load("../data/models/Mrfuk1a.full.rds")
+#load("../data/models/Mglmuk1a.full.rds")
+#load("../data/models/Mbglmuk1a.full.rds")
+load("../data/models/Mgamuk1a.full.rds")
+load("../data/models/Mgbmuk1a.full.rds")
+#load("../data/models/Msvmuk1a.full.rds")
+
+#Model <- Mgbmuk1a.full 
+#Model$coefnames
 ```
 
 ### Import predictors
 
 ```{r}
-load("../data/predictor_stack.Rdata")
+#load("../data/predictor_stack.Rdata")
 plot(predictors)
 ```
 
@@ -64,22 +76,23 @@ plot(predictors)
 elev <- raster("../data/predictor_stack.tif", band = 1)
 aspect <- raster("../data/predictor_stack.tif", band = 2)
 slope <- raster("../data/predictor_stack.tif", band = 3)
-outflow <- raster("../data/predictor_stack.tif", band = 4)
-inflow <- raster("../data/predictor_stack.tif", band = 5)
-gdd <- raster("../data/predictor_stack.tif", band = 6)
-gsl <- raster("../data/predictor_stack.tif", band = 7)
-rain_ann <- raster("../data/predictor_stack.tif", band = 8)
-rain_daily <- raster("../data/predictor_stack.tif", band = 9)
-raindays_10mm <- raster("../data/predictor_stack.tif", band = 10)
-raindays_1mm <- raster("../data/predictor_stack.tif", band = 11)
-temp_mean <- raster("../data/predictor_stack.tif", band = 12)
-temp_min <- raster("../data/predictor_stack.tif", band = 13)
-temp_max <- raster("../data/predictor_stack.tif", band = 14)
+gdd <- raster("../data/predictor_stack.tif", band = 4)
+gsl <- raster("../data/predictor_stack.tif", band = 5)
+rain_ann <- raster("../data/predictor_stack.tif", band = 6)
+rain_daily <- raster("../data/predictor_stack.tif", band = 7)
+raindays_10mm <- raster("../data/predictor_stack.tif", band = 8)
+raindays_1mm <- raster("../data/predictor_stack.tif", band = 9)
+temp_mean <- raster("../data/predictor_stack.tif", band = 10)
+temp_min <- raster("../data/predictor_stack.tif", band = 11)
+temp_max <- raster("../data/predictor_stack.tif", band = 12)
 
-predictors <- stack(elev, aspect, slope, outflow, inflow, gdd, gsl, rain_ann, rain_daily, 
+predictors <- stack(elev, aspect, slope, 
+                    #outflow, inflow, 
+                    gdd, gsl, rain_ann, rain_daily, 
                     raindays_10mm, raindays_1mm, temp_mean, temp_min, temp_max)
 
-names(predictors) <-names(predictors) <- c("elev", "aspect", "slope", "outflow", "inflow",
+names(predictors) <-names(predictors) <- c("elev", "aspect", "slope", 
+                                           #"outflow", "inflow",
                                            "gdd", "gsl", "rain_ann", "rain_daily", 
                                            "raindays_10mm", "raindays_1mm", "temp_mean", 
                                            "temp_min", "temp_max")
@@ -102,43 +115,102 @@ if necessary crop to prediction extent
 plot(elev)
 ```
 
+## Start Parallel Processing
+```{r}
+detectCores()
+getDoParWorkers()
+cl <- makeCluster(detectCores()-1)
+registerDoParallel(cl)
+getDoParName()
+getDoParWorkers()
+#registerDoSEQ() # to stop parallel processing
+```
 
 ## Predict outputs from predictors
 
 ```{r}
 
- starttime <- Sys.time()
-
-output <- raster::predict(predictors, Model)
-
-  modeltime <- rbind(modeltime, 
-                     data.frame(model = "pd_rf_moduk1a.tif",
-                                insType = #if not on EC2, use local
-                                  "local",
-                                  #aws.ec2metadata::metadata$instance_type(),
-                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
-  
-
-writeRaster(x = output, filename = "../outputs/pd_rf_moduk1a.tif", overwrite = TRUE)
-
-saveRDS(output, "../outputs/pd_rf_moduk1a.rds")
-
-plot(output)
+#  starttime <- Sys.time()
+# 
+# output <- raster::predict(predictors, Model)
+# 
+#   modeltime <- rbind(modeltime, 
+#                      data.frame(model = "pd_gbm_moduk1a.tif",
+#                                 insType = #if not on EC2, use local
+#                                   "local",
+#                                   #aws.ec2metadata::metadata$instance_type(),
+#                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
+#   
+# 
+# writeRaster(x = output, filename = "../outputs/pd_gbm_moduk1a.tif", overwrite = TRUE)
+# 
+# saveRDS(output, "../outputs/pd_gbm_moduk1a.rds")
+# 
+# plot(output)
 
 ```
 
 
-# Predict a number of models
+## Predict a number of models
 
+###linear model
 ```{r}
-output <- raster::predict(predictors, Mlm2a.full, type="raw", progress="text",
+  starttime <- Sys.time()
+pd_lm_uk1a <- raster::predict(predictors, Mlmuk1a.full, type="raw", progress="text",
                           response = "vote", index = 2)
-writeRaster(x = output, filename = "../outputs/pd_lm_mod2b.tif")
-plot(output)
+  modeltime <- rbind(modeltime,
+                     data.frame(model = "pd_lm_uk1a.tif",
+                                insType = #if not on EC2, use local
+                                  "local",
+                                  #aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+writeRaster(x = pd_lm_uk1a, filename = "../outputs/pd_lm_uk1a.tif")
+#plot(pd_lm_uk1a)
+```
 
-output <- raster::predict(predictors, Mrf2a.full, type="raw", progress="text",
+
+###random forest model
+```{r}
+starttime <- Sys.time()
+pd_rf_uk1a <- raster::predict(predictors, Mrfuk1a.full, type="raw", progress="text",
                           response = "vote", index = 2)
-writeRaster(x = output, filename = "../outputs/pd_rf_mod2b.tif")
-plot(output)
+  modeltime <- rbind(modeltime,
+                     data.frame(model = "pd_rf_uk1a.tif",
+                                insType = #if not on EC2, use local
+                                  "local",
+                                  #aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+writeRaster(x = pd_rf_uk1a, filename = "../outputs/pd_rf_uk1a.tif")
+#plot(pd_rf_uk1a)
+```
+
+###GAM 
+```{r}
+  starttime <- Sys.time()
+pd_gam_uk1a <- raster::predict(predictors, Mgamuk1a.full, type="raw", progress="text",
+                          response = "vote", index = 2)
+  modeltime <- rbind(modeltime,
+                     data.frame(model = "pd_gam_uk1a.tif FAILED",
+                                insType = #if not on EC2, use local
+                                  "local",
+                                  #aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+writeRaster(x = pd_gam_uk1a, filename = "../outputs/pd_gam_uk1a.tif")
+#plot(pd_gam_uk1a)
+```
+
+###GBM
+```{r}
+  starttime <- Sys.time()
+pd_gbm_uk1a <- raster::predict(predictors, Mgbmuk1a.full, type="raw", progress="text",
+                          response = "vote", index = 2)
+  modeltime <- rbind(modeltime,
+                     data.frame(model = "pd_gbm_uk1a.tif",
+                                insType = #if not on EC2, use local
+                                  "local",
+                                  #aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+writeRaster(x = pd_gbm_uk1a, filename = "../outputs/pd_gbm_uk1a.tif")
+#plot(pd_gbm_uk1a)
 ```
 
