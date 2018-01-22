@@ -99,16 +99,21 @@ Mlmuk1a
 
 train random forest model
 ```{r}
+
   starttime <- Sys.time()
 
-Mrfuk1a <- train(PEAT_DEPTH ~ ., 
-              data = training, 
-              method = "Rborist")
+Mrfuk1a <- train(PEAT_DEPTH ~ .,
+              data = training,
+              method = "ranger", 
+              num.trees = 100)
+              
+  modeltime <- rbind(
+    modeltime, 
+    data.frame(model = "Mrfuk1a",
+               insType = aws.ec2metadata::metadata$instance_type(),
+               time_mins = difftime(Sys.time(), starttime, 
+                                    units = "mins")))  
 
-  modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mrfuk1a",
-                                insType = aws.ec2metadata::metadata$instance_type(),
-                                time_mins = difftime(Sys.time(), starttime, units = "mins")))  
 save(Mrfuk1a, file = "../data/models/Mrfuk1a.rds")
 
 Mrfuk1a
