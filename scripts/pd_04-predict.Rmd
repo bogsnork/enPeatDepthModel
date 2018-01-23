@@ -190,7 +190,7 @@ writeRaster(x = pd_rf_uk1a, filename = "../outputs/pd_rf_uk1a.tif")
 pd_gam_uk1a <- raster::predict(predictors, Mgamuk1a.full, type="raw", progress="text",
                           response = "vote", index = 2)
   modeltime <- rbind(modeltime,
-                     data.frame(model = "pd_gam_uk1a.tif FAILED",
+                     data.frame(model = "pd_gam_uk1a.tif",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
@@ -212,5 +212,49 @@ pd_gbm_uk1a <- raster::predict(predictors, Mgbmuk1a.full, type="raw", progress="
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
 writeRaster(x = pd_gbm_uk1a, filename = "../outputs/pd_gbm_uk1a.tif")
 #plot(pd_gbm_uk1a)
+```
+
+
+###export system performance stats: 
+```{r}
+dir.create("../outputs")
+write.csv(x = modeltime, file = as.character(paste0("../outputs/modeltime", "_", format(Sys.time(), "%Y%m%d_%H%M"), ".csv")), row.names = FALSE)
+```
+
+
+
+## Export data
+
+### Set credentials for S3 export
+```{r}
+#list IAM roles in instance
+metadata$iam_role_names()
+
+#get specified rolename (if only 1 leave at 1)
+cred.role <- metadata$iam_role_names()[1]
+
+#this works if running R from within an EC2 instance
+Sys.setenv("AWS_ACCESS_KEY_ID" = metadata$iam_role(role = cred.role)$AccessKeyId,
+           "AWS_SECRET_ACCESS_KEY" = metadata$iam_role(role = cred.role)$SecretAccessKey,
+           "AWS_DEFAULT_REGION" = "eu-west-2",
+           "AWS_SESSION_TOKEN" = metadata$iam_role(role = cred.role)$Token)
+```
+
+### Export data in terminal
+```{bash}
+#instance needs to have awscli installed: sudo apt-get install awscli
+#(prob need to ssh into it as rstudio user doesn't have sudo access)
+pwd
+
+aws s3 ls
+#copy entire folder
+aws s3 sync /home/rstudio/enPeatDepthModel/data/models s3://ne-stats-data/enPeatDepthModel/data/models 
+
+#copy file
+aws s3 sync /home/rstudio/enPeatDepthModel/outputs s3://ne-stats-data/enPeatDepthModel/outputs 
+
+#copy to local 
+#aws s3 sync /home/rstudio/enPeatDepthModel/outputs c://Christoph/enPeatDepthModel/outputs
+#not getting this to work
 ```
 
