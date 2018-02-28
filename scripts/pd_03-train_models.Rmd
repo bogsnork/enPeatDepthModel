@@ -84,18 +84,18 @@ modeltime <- data.frame(model = as.character(),
 ```{r}
   starttime <- Sys.time()
 
-Mlmuk1a <- train(PEAT_DEPTH ~ ., 
+Mlmuk1b <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "lm")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mlmuk1a",
+                     data.frame(model = "Mlmuk1b",
                                 insType = aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
 
-save(Mlmuk1a, file = "../data/models/Mlmuk1a.rds")
+save(Mlmuk1b, file = "../data/models/Mlmuk1b.rds")
 
-Mlmuk1a
+Mlmuk1b
 ```
 
 #### train random forest model
@@ -103,79 +103,79 @@ Mlmuk1a
 
   starttime <- Sys.time()
 
-Mrfuk1a <- train(PEAT_DEPTH ~ .,
+Mrfuk1b <- train(PEAT_DEPTH ~ .,
               data = training,
               method = "ranger", 
               num.trees = 100)
               
   modeltime <- rbind(
     modeltime, 
-    data.frame(model = "Mrfuk1a",
+    data.frame(model = "Mrfuk1b",
                insType = aws.ec2metadata::metadata$instance_type(),
                time_mins = difftime(Sys.time(), starttime, 
                                     units = "mins")))  
 
-save(Mrfuk1a, file = "../data/models/Mrfuk1a.rds")
+save(Mrfuk1b, file = "../data/models/Mrfuk1b.rds")
 
-Mrfuk1a
+Mrfuk1b
 ```
 
 performance stats
 ```{r}
-rbind(getTrainPerf(Mlmuk1a), getTrainPerf(Mrfuk1a))
+rbind(getTrainPerf(Mlmuk1b), getTrainPerf(Mrfuk1b))
 ```
 
 ####train generalised linear model
 ```{r}
   starttime <- Sys.time()
 
-Mglmuk1a <- train(PEAT_DEPTH ~ ., 
+Mglmuk1b <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "glm")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mglmuk1a",
+                     data.frame(model = "Mglmuk1b",
                                 insType = aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
-save(Mglmuk1a, file = "../data/models/Mglmuk1a.rds")
+save(Mglmuk1b, file = "../data/models/Mglmuk1b.rds")
 
-Mglmuk1a
+Mglmuk1b
 ```
 
 ####train boosted generalised linear model
 ```{r}
   starttime <- Sys.time()
 
-Mbglmuk1a <- train(PEAT_DEPTH ~ ., 
+Mbglmuk1b <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "glmboost")
 
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mbglmuk1a",
+                     data.frame(model = "Mbglmuk1b",
                                 insType = aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
-save(Mbglmuk1a, file = "../data/models/Mbglmuk1a.rds")
+save(Mbglmuk1b, file = "../data/models/Mbglmuk1b.rds")
 
-Mbglmuk1a
+Mbglmuk1b
 ```
 
 ####train k nearest neighbours model
 ```{r}
   starttime <- Sys.time()
 
-Mknnuk1a <- train(PEAT_DEPTH ~ ., 
+Mknnuk1b <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "knn")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mknnuk1a",
+                     data.frame(model = "Mknnuk1b",
                                 insType = aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
   
-save(Mknnuk1a, file = "../data/models/Mknnuk1a.rds")
+save(Mknnuk1b, file = "../data/models/Mknnuk1b.rds")
 
-Mknnuk1a
+Mknnuk1b
 ```
 
 
@@ -184,36 +184,36 @@ Mknnuk1a
 ```{r}
   starttime <- Sys.time()
 
-Mgamuk1a <- train(PEAT_DEPTH ~ ., 
+Mgamuk1b <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "gam")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mgamuk1a",
+                     data.frame(model = "Mgamuk1b",
                                 insType = aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
   
-save(Mgamuk1a, file = "../data/models/Mgamuk1a.rds")
+save(Mgamuk1b, file = "../data/models/Mgamuk1b.rds")
 
-Mgamuk1a
+Mgamuk1b
 ```
 
 ####train Gradient Boosting Model 
 ```{r}
   starttime <- Sys.time()
 
-Mgbmuk1a <- train(PEAT_DEPTH ~ ., 
+Mgbmuk1b <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "gbm")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mgbmuk1a",
+                     data.frame(model = "Mgbmuk1b",
                                 insType = aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
   
-save(Mgbmuk1a, file = "../data/models/Mgbmuk1a.rds")
+save(Mgbmuk1b, file = "../data/models/Mgbmuk1b.rds")
 
-Mgbmuk1a
+Mgbmuk1b
 ```
 
 ####train support vector machine (SVM)
@@ -223,42 +223,44 @@ Mgbmuk1a
 #training_stand <- predict(preproc_stand, training); summary(training_stand)
   starttime <- Sys.time()
 
-Msvmuk1a <- train(PEAT_DEPTH ~ ., 
+Msvmuk1b <- train(PEAT_DEPTH ~ ., 
                 data = training, 
                 method = "svmLinear", # Linear Kernel
                 preProc = c("center", "scale")) #standardise data
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Msvmuk1a",
+                     data.frame(model = "Msvmuk1b",
                                 insType = aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
   
-save(Msvmuk1a, file = "../data/models/Msvmuk1a.rds")
+save(Msvmuk1b, file = "../data/models/Msvmuk1b.rds")
 
-Msvmuk1a
+Msvmuk1b
 ```
 
 
 ## Evaluate models
 ```{r}
 #load models
-load("../data/models/Mlmuk1a.rds")
-load("../data/models/Mrfuk1a.rds")
-load("../data/models/Mglmuk1a.rds")
-load("../data/models/Mbglmuk1a.rds")
-load("../data/models/Mgamuk1a.rds")
-load("../data/models/Mgbmuk1a.rds")
-load("../data/models/Msvmuk1a.rds")
+load("../data/models/Mlmuk1b.rds")
+load("../data/models/Mrfuk1b.rds")
+load("../data/models/Mglmuk1b.rds")
+load("../data/models/Mbglmuk1b.rds")
+load("../data/models/Mknnuk1b.rds")
+load("../data/models/Mgamuk1b.rds")
+load("../data/models/Mgbmuk1b.rds")
+load("../data/models/Msvmuk1b.rds")
 ```
 
 ```{r}
-cvValues <- resamples(list(LM = Mlmuk1a, 
-                           RF = Mrfuk1a, 
-                           GLM = Mglmuk1a, 
-                           GLMB = Mbglmuk1a, 
-                           GAM = Mgamuk1a, 
-                           GBM = Mgbmuk1a, 
-                           SVM = Msvmuk1a))
+cvValues <- resamples(list(LM = Mlmuk1b, 
+                           RF = Mrfuk1b, 
+                           GLM = Mglmuk1b, 
+                           GLMB = Mbglmuk1b, 
+                           KNN = Mknnuk1b,
+                           GAM = Mgamuk1b, 
+                           GBM = Mgbmuk1b, 
+                           SVM = Msvmuk1b))
 summary(cvValues)
 
 #prep tabular summary of mean metrics
@@ -297,19 +299,21 @@ testing_stand <- predict(preproc_stand, testing)
 
 
 ```{r}
-lm_pred <- predict(Mlmuk1a, testing)
+lm_pred <- predict(Mlmuk1b, testing)
 
-rf_pred <- predict(Mrfuk1a, testing)
+rf_pred <- predict(Mrfuk1b, testing)
 
-glm_pred <- predict(Mglmuk1a, testing)
+glm_pred <- predict(Mglmuk1b, testing)
 
-glmb_pred <- predict(Mbglmuk1a, testing) 
+glmb_pred <- predict(Mbglmuk1b, testing) 
 
-gam_pred <- predict(Mgamuk1a, testing)
+knn_pred <- predict(Mknnuk1b, testing)
 
-gbm_pred <- predict(Mgbmuk1a, testing)
+gam_pred <- predict(Mgamuk1b, testing)
 
-svm_pred <- predict(Msvmuk1a, testing)
+gbm_pred <- predict(Mgbmuk1b, testing)
+
+svm_pred <- predict(Msvmuk1b, testing)
 
 ```
 
@@ -328,12 +332,13 @@ mod_variance <- data.frame(rbind(
   postResample(pred = rf_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = glm_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = glmb_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = knn_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = gam_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = gbm_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = svm_pred, obs = testing$PEAT_DEPTH)
 ))
 
-mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", 
+mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", "knn",
                                 "gam", "gbm", "svm"), 
                       mod_variance)
 mod_variance
@@ -348,52 +353,52 @@ mod_variance
 ```{r}
   starttime <- Sys.time()
 
-Mlmuk1a.full <- train(PEAT_DEPTH ~ ., 
+Mlmuk1b.full <- train(PEAT_DEPTH ~ ., 
               data = input.data, 
               method = "lm")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mlmuk1a.full",
+                     data.frame(model = "Mlmuk1b.full",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
   
-save(Mlmuk1a.full, file = "../data/models/Mlmuk1a.full.rds")
+save(Mlmuk1b.full, file = "../data/models/Mlmuk1b.full.rds")
 
-Mlmuk1a.full
+Mlmuk1b.full
 ```
 
 ####train full RF
 ```{r}
   starttime <- Sys.time()
 
-Mrfuk1a.full <- train(PEAT_DEPTH ~ ., 
+Mrfuk1b.full <- train(PEAT_DEPTH ~ ., 
               data = input.data, 
               method = "Rborist")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mrfuk1a.full",
+                     data.frame(model = "Mrfuk1b.full",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
   
-save(Mrfuk1a.full, file = "../data/models/Mrfuk1a.full.rds")
+save(Mrfuk1b.full, file = "../data/models/Mrfuk1b.full.rds")
 
-Mrfuk1a.full
+Mrfuk1b.full
 ```
 
 ####train full GAM
 ```{r}
   starttime <- Sys.time()
 
-Mgamuk1a.full <- train(PEAT_DEPTH ~ ., 
+Mgamuk1b.full <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "gam")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mgamuk1a.full",
+                     data.frame(model = "Mgamuk1b.full",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
@@ -401,34 +406,56 @@ Mgamuk1a.full <- train(PEAT_DEPTH ~ .,
                                                      starttime, 
                                                      units = "mins")))
   
-save(Mgamuk1a.full, file = "../data/models/Mgamuk1a.full.rds")
+save(Mgamuk1b.full, file = "../data/models/Mgamuk1b.full.rds")
 
-Mgamuk1a.full 
+Mgamuk1b.full 
 ```
 
 ####train full GBM 
 ```{r}
   starttime <- Sys.time()
 
-Mgbmuk1a.full <- train(PEAT_DEPTH ~ ., 
+Mgbmuk1b.full <- train(PEAT_DEPTH ~ ., 
               data = training, 
               method = "gbm")
 
   modeltime <- rbind(modeltime, 
-                     data.frame(model = "Mgbmuk1a.full",
+                     data.frame(model = "Mgbmuk1b.full",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
   
-save(Mgbmuk1a.full, file = "../data/models/Mgbmuk1a.full.rds")
+save(Mgbmuk1b.full, file = "../data/models/Mgbmuk1b.full.rds")
 
-Mgbmuk1a.full
+Mgbmuk1b.full
 ```
 
-evaluate
+
+####train full KNN 
 ```{r}
-rbind(getTrainPerf(Mlmuk1a.full), getTrainPerf(Mrfuk1a.full), getTrainPerf(Mgamuk1a.full), getTrainPerf(Mgbmuk1a.full))
+  starttime <- Sys.time()
+
+Mknnuk1b.full <- train(PEAT_DEPTH ~ ., 
+              data = training, 
+              method = "knn")
+
+  modeltime <- rbind(modeltime, 
+                     data.frame(model = "Mknnuk1b.full",
+                                insType = #if not on EC2, use local
+                                  "local",
+                                  #aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+  
+save(Mknnuk1b.full, file = "../data/models/Mknnuk1b.full.rds")
+
+Mknnuk1b.full
+```
+
+
+### evaluate
+```{r}
+rbind(getTrainPerf(Mlmuk1b.full), getTrainPerf(Mrfuk1b.full), getTrainPerf(Mgamuk1b.full), getTrainPerf(Mgbmuk1b.full), getTrainPerf(Mknnuk1b.full))
 ```
 
 ###export system performance stats: 

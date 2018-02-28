@@ -1,0 +1,134 @@
+---
+title: 'England Blanket Bog Model: ensemble model outputs'
+output:
+  html_notebook: default
+---
+
+## Packages 
+```{r}
+library(raster)
+library(rgdal)
+#library(ranger)
+
+library(parallel)
+library(doParallel)
+
+library(caret)
+
+#data import
+library(aws.s3)
+library(aws.ec2metadata)
+```
+
+
+
+## Import data
+
+### Set credentials for S3 import
+```{r}
+#list IAM roles in instance
+metadata$iam_role_names()
+
+#get specified rolename (if only 1 leave at 1)
+cred.role <- metadata$iam_role_names()[1]
+
+#this works if running R from within an EC2 instance
+Sys.setenv("AWS_ACCESS_KEY_ID" = metadata$iam_role(role = cred.role)$AccessKeyId,
+           "AWS_SECRET_ACCESS_KEY" = metadata$iam_role(role = cred.role)$SecretAccessKey,
+           "AWS_DEFAULT_REGION" = "eu-west-2",
+           "AWS_SESSION_TOKEN" = metadata$iam_role(role = cred.role)$Token)
+```
+
+
+### Import models in terminal
+```{bash}
+<!-- #instance needs to have awscli installed: sudo apt-get install awscli -->
+<!-- #(prob need to ssh into it as rstudio user doesn't have sudo access) -->
+<!-- pwd -->
+<!-- aws s3 ls -->
+<!-- #copy entire folder -->
+<!-- aws s3 sync s3://ne-stats-data/enPeatDepthModel/data/models /home/rstudio/enPeatDepthModel/data/models -->
+```
+
+
+
+## Load data
+
+Load models
+```{r}
+#load models
+load("../data/models/Mlmuk1b.full.rds")
+load("../data/models/Mrfuk1b.full.rds")
+#load("../data/models/Mglmuk1b.full.rds")
+#load("../data/models/Mbglmuk1b.full.rds")
+load("../data/models/Mgamuk1b.full.rds")
+load("../data/models/Mgbmuk1b.full.rds")
+load("../data/models/Mknnuk1b.full.rds")
+#load("../data/models/Msvmuk1b.full.rds")
+
+#Model <- Mgbmuk1a.full 
+#Model$coefnames
+```
+
+
+load predictions
+
+```{r}
+pd_lm <- raster("../outputs/pd_lm_uk1b_ml.tif")
+plot(pd_lm)
+pd_rf <- raster("../outputs/pd_rf_uk1b_ml.tif")
+plot(pd_rf)
+pd_gam <- raster("../outputs/pd_gam_uk1b_ml.tif")
+plot(pd_gam)
+pd_gbm <- raster("../outputs/pd_gbm_uk1b_ml.tif")
+plot(pd_gbm)
+pd_knn <- raster("../outputs/pd_knn_uk1b_ml.tif")
+```
+
+#Prep weightings
+```{r}
+#get model performance
+
+modPerf <- rbind(caret::getTrainPerf(Mlmuk1b.full), 
+                 caret::getTrainPerf(Mrfuk1b.full),
+                 caret::getTrainPerf(Mgamuk1b.full),
+                 caret::getTrainPerf(Mgbmuk1b.full), 
+                 caret::getTrainPerf(Mknnuk1b.full))
+modPerf
+```
+
+```{r}
+
+weightLM <- modPerf[1, 2] / sum(modPerf$TrainRsquared)
+weightRF <- modPerf[2, 2] / sum(modPerf$TrainRsquared)
+weightGAM <- modPerf[3,2] / sum(modPerf$TrainRsquared)
+weightGBM <- modPerf[4,2] / sum(modPerf$TrainRsquared)
+weightKNN <- modPerf[5,2] / sum(modPerf$TrainRsquared)
+weightLM + weightRF + weightGAM + weightGBM + weightKNN
+
+mEnsemb <- (pd_lm * weightLM) + (pd_rf * weightRF) + (pd_gam * weightGAM) + 
+  (pd_gbm * weightGBM) + (pd_knn * weightKNN)
+
+#plot(pd_lm)
+#plot(pd_rf)
+plot(mEnsemb)
+
+```
+
+```{r}
+writeRaster(x = mEnsemb, filename = "../outputs/pd_ens_uk1b_ml.tif")
+```
+
+
+
+### Export data in terminal
+```{bash}
+#instance needs to have awscli installed: sudo apt-get install awscli
+#(prob need to ssh into it as rstudio user doesn't have sudo access)
+pwd
+
+aws s3 ls
+
+#copy file
+aws s3 sync /home/rstudio/enPeatDepthModel/outputs s3://ne-stats-data/enPeatDepthModel/outputs 
+```

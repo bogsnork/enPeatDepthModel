@@ -44,6 +44,9 @@ pwd
 aws s3 ls
 #copy entire folder
 aws s3 sync s3://ne-stats-data/enPeatDepthModel/data/models /home/rstudio/enPeatDepthModel/data/models
+
+##and all the other data
+aws s3 sync s3://ne-stats-data/enPeatDepthModel/data /home/rstudio/enPeatDepthModel/data
 ```
 
 
@@ -51,15 +54,16 @@ aws s3 sync s3://ne-stats-data/enPeatDepthModel/data/models /home/rstudio/enPeat
 ## Load data
 ```{r}
 #load models
-load("../data/models/Mlmuk1a.full.rds")
-load("../data/models/Mrfuk1a.full.rds")
-#load("../data/models/Mglmuk1a.full.rds")
-#load("../data/models/Mbglmuk1a.full.rds")
-load("../data/models/Mgamuk1a.full.rds")
-load("../data/models/Mgbmuk1a.full.rds")
-#load("../data/models/Msvmuk1a.full.rds")
+load("../data/models/Mlmuk1b.full.rds")
+load("../data/models/Mrfuk1b.full.rds")
+#load("../data/models/Mglmuk1b.full.rds")
+#load("../data/models/Mbglmuk1b.full.rds")
+load("../data/models/Mknnuk1b.full.rds")
+load("../data/models/Mgamuk1b.full.rds")
+load("../data/models/Mgbmuk1b.full.rds")
+#load("../data/models/Msvmuk1b.full.rds")
 
-#Model <- Mgbmuk1a.full 
+#Model <- Mgbmuk1b.full 
 #Model$coefnames
 ```
 
@@ -98,21 +102,27 @@ names(predictors) <-names(predictors) <- c("elev", "aspect", "slope",
                                            "temp_min", "temp_max")
 ```
 
-or do the following: 
 if necessary crop to prediction extent
 ```{r}
-# #crop to prediction extent
-# 
-# 
-# #load observations to get extent
-# #observationsSPDF <- readOGR(dsn = "../data/observations.shp", verbose = TRUE)
+#crop to moorland line
+
+#load moorland line
+moorlineSPDF <- readOGR(dsn = "../data/moorland_line_RPA.shp", verbose = TRUE)
 # boundbox <- observations@bbox; boundbox 
 # 
 # predictors <- raster::crop(x = predictors, y = boundbox)
+# boundbox <- observations@bbox; boundbox
+
+predictors <- raster::mask(x = predictors, mask = moorlineSPDF)
+
+writeRaster(x = predictors, filename = "../data/predictors_moorline.tif")
+# 
+
+plot(predictors$elev)
 ```
 
 ```{r}
-plot(elev)
+plot(predictors$elev)
 ```
 
 ## Start Parallel Processing
@@ -135,16 +145,16 @@ getDoParWorkers()
 # output <- raster::predict(predictors, Model)
 # 
 #   modeltime <- rbind(modeltime, 
-#                      data.frame(model = "pd_gbm_moduk1a.tif",
+#                      data.frame(model = "pd_gbm_moduk1b.tif",
 #                                 insType = #if not on EC2, use local
 #                                   "local",
 #                                   #aws.ec2metadata::metadata$instance_type(),
 #                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
 #   
 # 
-# writeRaster(x = output, filename = "../outputs/pd_gbm_moduk1a.tif", overwrite = TRUE)
+# writeRaster(x = output, filename = "../outputs/pd_gbm_moduk1b.tif", overwrite = TRUE)
 # 
-# saveRDS(output, "../outputs/pd_gbm_moduk1a.rds")
+# saveRDS(output, "../outputs/pd_gbm_moduk1b.rds")
 # 
 # plot(output)
 
@@ -156,62 +166,79 @@ getDoParWorkers()
 ###linear model
 ```{r}
   starttime <- Sys.time()
-pd_lm_uk1a <- raster::predict(predictors, Mlmuk1a.full, type="raw", progress="text",
+pd_lm_uk1b <- raster::predict(predictors, Mlmuk1b.full, type="raw", progress="text",
                           response = "vote", index = 2)
   modeltime <- rbind(modeltime,
-                     data.frame(model = "pd_lm_uk1a.tif",
+                     data.frame(model = "pd_lm_uk1b_ml.tif",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
-writeRaster(x = pd_lm_uk1a, filename = "../outputs/pd_lm_uk1a.tif")
-#plot(pd_lm_uk1a)
+writeRaster(x = pd_lm_uk1b, filename = "../outputs/pd_lm_uk1b_ml.tif")
+#plot(pd_lm_uk1b)
 ```
 
 
 ###random forest model
 ```{r}
 starttime <- Sys.time()
-pd_rf_uk1a <- raster::predict(predictors, Mrfuk1a.full, type="raw", progress="text",
+pd_rf_uk1b <- raster::predict(predictors, Mrfuk1b.full, type="raw", progress="text",
                           response = "vote", index = 2)
   modeltime <- rbind(modeltime,
-                     data.frame(model = "pd_rf_uk1a.tif",
+                     data.frame(model = "pd_rf_uk1b_ml.tif",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
-writeRaster(x = pd_rf_uk1a, filename = "../outputs/pd_rf_uk1a.tif")
-#plot(pd_rf_uk1a)
+writeRaster(x = pd_rf_uk1b, filename = "../outputs/pd_rf_uk1b_ml.tif")
+#plot(pd_rf_uk1b)
 ```
 
 ###GAM 
 ```{r}
   starttime <- Sys.time()
-pd_gam_uk1a <- raster::predict(predictors, Mgamuk1a.full, type="raw", progress="text",
+pd_gam_uk1b <- raster::predict(predictors, Mgamuk1b.full, type="raw", progress="text",
                           response = "vote", index = 2)
   modeltime <- rbind(modeltime,
-                     data.frame(model = "pd_gam_uk1a.tif",
+                     data.frame(model = "pd_gam_uk1b_ml.tif",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
-writeRaster(x = pd_gam_uk1a, filename = "../outputs/pd_gam_uk1a.tif")
-#plot(pd_gam_uk1a)
+writeRaster(x = pd_gam_uk1b, filename = "../outputs/pd_gam_uk1b_ml.tif")
+#plot(pd_gam_uk1b)
 ```
 
 ###GBM
 ```{r}
   starttime <- Sys.time()
-pd_gbm_uk1a <- raster::predict(predictors, Mgbmuk1a.full, type="raw", progress="text",
+pd_gbm_uk1b <- raster::predict(predictors, Mgbmuk1b.full, type="raw", progress="text",
                           response = "vote", index = 2)
   modeltime <- rbind(modeltime,
-                     data.frame(model = "pd_gbm_uk1a.tif",
+                     data.frame(model = "pd_gbm_uk1b_ml.tif",
                                 insType = #if not on EC2, use local
                                   "local",
                                   #aws.ec2metadata::metadata$instance_type(),
                                 time_mins = difftime(Sys.time(), starttime, units = "mins")))
-writeRaster(x = pd_gbm_uk1a, filename = "../outputs/pd_gbm_uk1a.tif")
-#plot(pd_gbm_uk1a)
+writeRaster(x = pd_gbm_uk1b, filename = "../outputs/pd_gbm_uk1b_ml.tif")
+#plot(pd_gbm_uk1b)
+```
+
+
+
+###KNN model
+```{r}
+starttime <- Sys.time()
+pd_knn_uk1b <- raster::predict(predictors, Mknnuk1b.full, type="raw", progress="text",
+                          response = "vote", index = 2)
+  modeltime <- rbind(modeltime,
+                     data.frame(model = "pd_knn_uk1b_ml.tif",
+                                insType = #if not on EC2, use local
+                                  "local",
+                                  #aws.ec2metadata::metadata$instance_type(),
+                                time_mins = difftime(Sys.time(), starttime, units = "mins")))
+writeRaster(x = pd_knn_uk1b, filename = "../outputs/pd_knn_uk1b_ml.tif")
+#plot(pd_knn_uk1b)
 ```
 
 
@@ -249,6 +276,11 @@ pwd
 aws s3 ls
 #copy entire folder
 aws s3 sync /home/rstudio/enPeatDepthModel/data/models s3://ne-stats-data/enPeatDepthModel/data/models 
+
+
+#copy entire folder
+aws s3 sync /home/rstudio/enPeatDepthModel/data s3://ne-stats-data/enPeatDepthModel/data 
+
 
 #copy file
 aws s3 sync /home/rstudio/enPeatDepthModel/outputs s3://ne-stats-data/enPeatDepthModel/outputs 
