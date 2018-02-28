@@ -1,6 +1,8 @@
 ---
-title: "England Peat Depth Model: Train models"
-output: html_notebook
+title: 'England Peat Depth Model: Train models'
+output:
+  word_document: default
+  html_notebook: default
 ---
 
 #Peat Depths: run models

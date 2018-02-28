@@ -1,0 +1,108 @@
+---
+title: 'England Blanket Bog Model: evaluation'
+output:
+  html_notebook: default
+---
+
+## Packages 
+```{r}
+library(tidyverse)
+
+library(raster)
+library(rgdal)
+#library(ranger)
+
+library(parallel)
+library(doParallel)
+
+library(caret)
+
+#data import
+library(aws.s3)
+library(aws.ec2metadata)
+```
+
+
+
+## Import data
+
+### Set credentials for S3 import
+```{r}
+#list IAM roles in instance
+metadata$iam_role_names()
+
+#get specified rolename (if only 1 leave at 1)
+cred.role <- metadata$iam_role_names()[1]
+
+#this works if running R from within an EC2 instance
+Sys.setenv("AWS_ACCESS_KEY_ID" = metadata$iam_role(role = cred.role)$AccessKeyId,
+           "AWS_SECRET_ACCESS_KEY" = metadata$iam_role(role = cred.role)$SecretAccessKey,
+           "AWS_DEFAULT_REGION" = "eu-west-2",
+           "AWS_SESSION_TOKEN" = metadata$iam_role(role = cred.role)$Token)
+```
+
+
+### Import outputs in terminal
+```{bash}
+#instance needs to have awscli installed: sudo apt-get install awscli
+#(prob need to ssh into it as rstudio user doesn't have sudo access)
+pwd
+aws s3 ls
+#copy entire folder
+aws s3 sync s3://ne-stats-data/enPeatDepthModel/outputs /home/rstudio/enPeatDepthModel/outputs
+```
+
+
+### Import observations
+
+```{r}
+
+observations <- readOGR(dsn = "../data/peat_obs.shp", verbose = TRUE)
+
+```
+
+
+## Extract predictions from ensemble model
+```{r}
+evaluation <- as.data.frame(observations$PEAT_DEPTH)
+names(evaluation) <- "pd_measured"
+
+#extract final prediction for point
+evaluation$pd_final <- raster::extract(pd_pred, coordinates(observations)[,1:2])
+
+#extract ensemble model prediction for point
+evaluation$pd_model_ens <- raster::extract(pd_ens, coordinates(observations)[,1:2])
+
+#extract kriged value for point
+evaluation$pd_kriged <- raster::extract(pd_krig_pred, coordinates(observations)[,1:2])
+
+#populate peat type
+evaluation$PEATTYPE <- observations$PEATTYPE #not a predictor
+
+#populate longitude and lattitude
+evaluation$lon <- coordinates(observations)[,1] #not a predictor
+evaluation$lat <- coordinates(observations)[,2] #not a predictor
+
+evaluation
+
+```
+
+
+#### Graph evaluation
+
+```{r}
+plot(evaluation$pd_measured, evaluation$pd_final)
+
+```
+
+```{r}
+evaluation_g <- evaluation %>% 
+  
+  gather(key = "source", value = "peat_depth", pd_measured:pd_kriged, )
+
+evaluation_g
+```
+
+
+
+

@@ -1,0 +1,130 @@
+---
+title: 'England Blanket Bog Model: interpolate measurements'
+output:
+  html_notebook: default
+---
+
+## Packages 
+```{r}
+library(raster)
+library(rgdal)
+#library(ranger)
+
+library(parallel)
+library(doParallel)
+
+library(caret)
+
+#data import
+library(aws.s3)
+library(aws.ec2metadata)
+```
+
+
+
+## Import data
+
+### Set credentials for S3 import
+```{r}
+#list IAM roles in instance
+metadata$iam_role_names()
+
+#get specified rolename (if only 1 leave at 1)
+cred.role <- metadata$iam_role_names()[1]
+
+#this works if running R from within an EC2 instance
+Sys.setenv("AWS_ACCESS_KEY_ID" = metadata$iam_role(role = cred.role)$AccessKeyId,
+           "AWS_SECRET_ACCESS_KEY" = metadata$iam_role(role = cred.role)$SecretAccessKey,
+           "AWS_DEFAULT_REGION" = "eu-west-2",
+           "AWS_SESSION_TOKEN" = metadata$iam_role(role = cred.role)$Token)
+```
+
+
+### Import outputs in terminal
+```{bash}
+#instance needs to have awscli installed: sudo apt-get install awscli
+#(prob need to ssh into it as rstudio user doesn't have sudo access)
+pwd
+aws s3 ls
+#copy entire folder
+aws s3 sync s3://ne-stats-data/enPeatDepthModel/outputs /home/rstudio/enPeatDepthModel/outputs
+```
+
+## Import data
+```{r}
+pd_ens <- raster("../outputs/pd_ens_uk1b_ml.tif")
+plot(pd_ens)
+
+pd_krig_pred <- raster("../outputs/krgd_ml_pred4.tif")
+plot(pd_krig_pred)
+
+pd_krig_prb <- raster("../outputs/krgd_ml_prb4.tif")
+plot(pd_krig_prb)
+
+```
+
+## normalise probability surface and invert it 
+
+Need to invert because its actually a measure of variance (i.e. higher is worse, so highest should be 0 and lowest should be 1)
+
+```{r}
+maxval <- cellStats(pd_krig_prb, stat='max')
+minval <- cellStats(pd_krig_prb, stat='min')
+rg <- maxval - minval
+maxval; minval; rg
+
+pd_krig_prb_std <- (pd_krig_prb - maxval) / rg *(-1)
+
+cellStats(pd_krig_prb_std, stat='range')
+
+plot(pd_krig_prb_std)
+```
+##add 0 to kriged layers
+
+```{r}
+pd_krig_pred <- resample(x = pd_krig_pred, y = pd_ens)
+plot(pd_krig_pred)
+
+pd_krig_prb_std <- resample(x = pd_krig_prb_std, y = pd_ens)
+
+plot(pd_krig_prb_std)
+```
+
+
+
+## combine kriged and modelled data using probability layer
+
+using the following approach: 
+
+Prediction = (Kriged probability x Kriged value) + ((1-Kriged probability) x Modelled value) 
+
+```{r}
+pd_pred <- (pd_krig_prb_std * pd_krig_pred) + ((1 - pd_krig_prb_std) * pd_ens)
+```
+
+
+
+```{r}
+writeRaster(x = pd_krig_prb_std, filename = "../outputs/krgd_ml_prb4_stdrsmp.tif")
+
+writeRaster(x = pd_krig_pred, filename = "../outputs/krgd_ml_pred4_rsmp.tif")
+
+writeRaster(x = pd_pred, filename = "../outputs/pd_enskrg_uk1bml.tif")
+```
+
+
+
+### Export data in terminal
+```{bash}
+#instance needs to have awscli installed: sudo apt-get install awscli
+#(prob need to ssh into it as rstudio user doesn't have sudo access)
+pwd
+
+aws s3 ls
+
+#copy file
+aws s3 sync /home/rstudio/enPeatDepthModel/outputs s3://ne-stats-data/enPeatDepthModel/outputs 
+```
+
+
+
