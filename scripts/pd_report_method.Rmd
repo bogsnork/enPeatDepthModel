@@ -1,0 +1,12 @@
+---
+title: "England Peat Depth Model uk1b Method"
+author: "Christoph Kratz"
+date: "4 April 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
