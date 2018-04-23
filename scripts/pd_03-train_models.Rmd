@@ -330,7 +330,7 @@ Calculate deviation
 
 ```{r}
 mod_variance <- data.frame(rbind(
-  postResample(pred = lm_pred, obs = testing$PEAT_DEPTH),
+  postResample(pred = lm_pred, obs = testing$PEAT_DEPTH), 
   postResample(pred = rf_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = glm_pred, obs = testing$PEAT_DEPTH),
   postResample(pred = glmb_pred, obs = testing$PEAT_DEPTH),
@@ -346,6 +346,27 @@ mod_variance <- cbind(model = c("lm", "rf", "glm", "glmb", "knn",
 mod_variance
 ```
 
+Plot training versus test
+```{r}
+
+tested <- data.frame(testing$PEAT_DEPTH,lm_pred, rf_pred, glm_pred, glmb_pred, knn_pred, gam_pred, gbm_pred, svm_pred)
+
+names(tested)[1] <- "PEAT_DEPTH"
+row.names(tested) <- NULL
+tested
+
+plot(tested$PEAT_DEPTH, tested$rf_pred)
+
+library(tidyverse)
+
+tested_g <- gather(data = tested, key = "model", value = "prediction", 2:9)
+
+ggplot(data = tested_g,
+       aes(y = prediction, x = PEAT_DEPTH, colour = model))+
+  geom_point(alpha = 0.2) +
+  geom_smooth(se = FALSE) 
+
+```
 
 
 
@@ -456,9 +477,79 @@ Mknnuk1b.full
 
 
 ### evaluate
+
+```{r}
+#load models
+load("../data/models/Mlmuk1b.full.rds")
+load("../data/models/Mrfuk1b.full.rds")
+load("../data/models/Mknnuk1b.full.rds")
+load("../data/models/Mgamuk1b.full.rds")
+load("../data/models/Mgbmuk1b.full.rds")
+```
+
+
 ```{r}
 rbind(getTrainPerf(Mlmuk1b.full), getTrainPerf(Mrfuk1b.full), getTrainPerf(Mgamuk1b.full), getTrainPerf(Mgbmuk1b.full), getTrainPerf(Mknnuk1b.full))
 ```
+
+```{r}
+cvValues.full <- resamples(list(LM = Mlmuk1b.full, 
+                           RF = Mrfuk1b.full,
+                           KNN = Mknnuk1b.full,
+                           GAM = Mgamuk1b.full, 
+                           GBM = Mgbmuk1b.full 
+                           ))
+summary(cvValues.full)
+
+#prep tabular summary of mean metrics
+cvMeans.full <- data.frame(lapply(X = cvValues.full$values[-1], mean))
+names(cvMeans.full) <- rep(cvValues.full$models, length(cvValues.full$metrics))
+cvIndex.full <- seq(from = 1,
+               by = length(cvValues.full$metrics),
+               length.out = length(cvValues.full$models))
+
+cvSummary.full <- data.frame(t(rbind(MAE = cvMeans.full[1,cvIndex.full], 
+      RMSE = cvMeans.full[1, cvIndex.full + 1],
+      RSq = cvMeans.full[1, cvIndex.full + 2])), 
+      methods = cvValues.full$methods)
+cvSummary.full
+
+#plot outputs
+splom(cvValues.full, metric = "Rsquared")
+parallelplot(cvValues.full, metric = "Rsquared")
+dotplot(cvValues.full, metric = "Rsquared")
+```
+
+Compare with training results
+
+```{r}
+row.names(cvSummary)
+row.names(cvSummary.full)
+
+rsq.all <- data.frame(model = row.names(cvSummary), training = as.character(cvSummary$RSq), testing = as.character(mod_variance$Rsquared))
+
+temp <- data.frame(model = row.names(cvSummary.full), final = cvSummary.full$RSq)
+
+rsq.all <- merge(rsq.all, temp, all.x = T)
+
+
+rsq.all$training <- as.numeric(as.character(rsq.all$training))
+rsq.all$testing <- as.numeric(as.character(rsq.all$testing))
+rsq.all$final <- as.numeric(as.character(rsq.all$final))
+
+rsq.all[is.na(rsq.all)]<- 0
+
+
+rsq.all_w <- gather(data = rsq.all, key = stage, value = RSq, 2:4)
+
+ggplot(filter(rsq.all_w, stage %in% c("training", "final")), aes(y = RSq, x = model, colour = stage)) +
+  geom_point()
+```
+
+
+
+
+
 
 ###export system performance stats: 
 ```{r}

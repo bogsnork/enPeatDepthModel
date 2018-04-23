@@ -29,6 +29,7 @@ have a look:
 dim(observationsSPDF)
 levels(observationsSPDF$PEATTYPE)
 hist(observationsSPDF$PEAT_DEPTH)
+hist(log(observationsSPDF$PEAT_DEPTH))
 table(observationsSPDF$PEATTYPE)
 plot(observationsSPDF)
 #plot(model.area, add = TRUE)

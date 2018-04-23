@@ -53,13 +53,13 @@ aws s3 sync s3://ne-stats-data/enPeatDepthModel/outputs /home/rstudio/enPeatDept
 ## Import data
 ```{r}
 pd_ens <- raster("../outputs/pd_ens_uk1b_ml.tif")
-plot(pd_ens)
+#plot(pd_ens)
 
 pd_krig_pred <- raster("../outputs/krgd_ml_pred4.tif")
-plot(pd_krig_pred)
+#plot(pd_krig_pred)
 
 pd_krig_prb <- raster("../outputs/krgd_ml_prb4.tif")
-plot(pd_krig_prb)
+#plot(pd_krig_prb)
 
 ```
 
@@ -83,13 +83,17 @@ plot(pd_krig_prb_std)
 
 ```{r}
 pd_krig_pred <- resample(x = pd_krig_pred, y = pd_ens)
-plot(pd_krig_pred)
+#plot(pd_krig_pred)
 
 pd_krig_prb_std <- resample(x = pd_krig_prb_std, y = pd_ens)
 
-plot(pd_krig_prb_std)
+#plot(pd_krig_prb_std)
 ```
 
+```{r}
+writeRaster(pd_krig_pred, "../data/pd_krig_pred.tif")
+writeRaster(pd_krig_prb_std, "../data/pd_krig_prb_std.tif")
+```
 
 
 ## combine kriged and modelled data using probability layer
@@ -100,16 +104,18 @@ Prediction = (Kriged probability x Kriged value) + ((1-Kriged probability) x Mod
 
 ```{r}
 pd_pred <- (pd_krig_prb_std * pd_krig_pred) + ((1 - pd_krig_prb_std) * pd_ens)
+
+plot(pd_pred)
 ```
 
 
 
 ```{r}
-writeRaster(x = pd_krig_prb_std, filename = "../outputs/krgd_ml_prb4_stdrsmp.tif")
+writeRaster(x = pd_krig_prb_std, filename = "../outputs/krgd_ml_prb5_stdrsmp.tif")
 
-writeRaster(x = pd_krig_pred, filename = "../outputs/krgd_ml_pred4_rsmp.tif")
+writeRaster(x = pd_krig_pred, filename = "../outputs/krgd_ml_pred5_rsmp.tif")
 
-writeRaster(x = pd_pred, filename = "../outputs/pd_enskrg_uk1bml.tif")
+writeRaster(x = pd_pred, filename = "../outputs/pd_enskrg_uk1bml2.tif")
 ```
 
 

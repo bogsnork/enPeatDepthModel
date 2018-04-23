@@ -10,3 +10,48 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+## Packages 
+```{r, include=FALSE}
+library(raster)
+library(rgdal)
+library(tidyverse)
+library(rgeos)
+library(rnaturalearth)
+```
+
+
+## Import data ----
+```{r}
+list.files(path = "../data", pattern = ".shp")
+
+observationsSPDF <- readOGR(dsn = "../data/peat_depth_survey_data_noGPR.shp", verbose = TRUE)
+
+# #prepare area to crop data to
+# model.area <- readOGR(dsn = "../data/YD_pilot_boundary.shp")
+# no_PHIBB <- readOGR(dsn = "../data/YD_pilot_no_PHIBB.shp")
+```
+
+have a look: 
+```{r}
+dim(observationsSPDF)
+levels(observationsSPDF$PEATTYPE)
+hist(observationsSPDF$PEAT_DEPTH)
+table(observationsSPDF$PEATTYPE)
+plot(observationsSPDF)
+#plot(model.area, add = TRUE)
+
+```
+
+make nice map
+```{r}
+#get baseline maps
+coast <- readOGR(dsn = "../data/coast.shp", verbose = TRUE)
+
+#plot observations
+plot(observationsSPDF, pch = 20, col = "red")
+# Plot coastlines background map
+plot(coast,  add = TRUE)
+
+
+```
+
